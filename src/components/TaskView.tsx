@@ -204,7 +204,7 @@ function Numpad({ task, solved, reveal, onWrong, onRight }: PartProps<Extract<Ta
             {k}
           </button>
         ))}
-        <button onClick={check} disabled={solved || !val} style={{ background: 'var(--primary)', color: 'var(--primary-ink)' }} aria-label="Тексеру">
+        <button className="go" onClick={check} disabled={solved || !val} aria-label="Тексеру">
           ✓
         </button>
       </div>

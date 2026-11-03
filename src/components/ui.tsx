@@ -1,4 +1,4 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { canSpeak, speak } from '../lib/media';
 
@@ -6,9 +6,9 @@ export function Brand({ to = '/' }: { to?: string }) {
   return (
     <Link className="brand" to={to}>
       <svg className="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
-        <rect width="64" height="64" rx="16" fill="var(--primary)" />
-        <path d="M18 44c4-10 10-16 22-20M30 46c3-7 8-11 16-13" stroke="var(--primary-ink)" strokeWidth="5" strokeLinecap="round" fill="none" />
-        <circle cx="20" cy="20" r="5" fill="var(--accent)" />
+        <rect width="64" height="64" rx="16" fill="#ffffff" />
+        <path d="M14 44h10l6-12 6 12h14" stroke="#1a1c55" strokeWidth="5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
+        <circle cx="30" cy="20" r="5" fill="#5b5fe0" />
       </svg>
       Qadam
     </Link>
@@ -53,6 +53,29 @@ export function Modal({ title, onClose, children, labelId = 'modal-title' }: { t
         {children}
       </div>
     </div>
+  );
+}
+
+/** Hero блок: көк фон, ішінде бұлыңғыр жарқыл (декор) */
+export function Hero({ children, className = '', glow = 'right', as: Tag = 'section', ...rest }: { children: ReactNode; className?: string; glow?: 'right' | 'center'; as?: 'section' | 'div'; 'aria-labelledby'?: string; 'aria-label'?: string }) {
+  const id = useId().replace(/:/g, '');
+  return (
+    <Tag className={`hero ${className}`} {...rest}>
+      <svg className={`hero-blob ${glow === 'center' ? 'center' : ''}`} viewBox="0 0 600 400" aria-hidden="true" focusable="false">
+        <defs>
+          <filter id={`hb${id}`} x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="26" />
+          </filter>
+        </defs>
+        <g filter={`url(#hb${id})`}>
+          <circle cx="300" cy="200" r="120" fill="var(--hero-glow)" opacity="0.55" />
+          <ellipse cx="280" cy="190" rx="250" ry="38" fill="var(--hero-deep)" opacity="0.8" transform="rotate(-22 280 190)" />
+          <ellipse cx="240" cy="250" rx="180" ry="30" fill="var(--hero-deep)" opacity="0.6" transform="rotate(-18 240 250)" />
+          <circle cx="400" cy="120" r="70" fill="var(--hero-glow)" opacity="0.35" />
+        </g>
+      </svg>
+      <div className="hero-body">{children}</div>
+    </Tag>
   );
 }
 

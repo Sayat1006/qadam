@@ -77,58 +77,101 @@ export function ChildShell() {
     navigate('/');
   }
 
+  const links = [
+    { to: '/child', end: true, icon: '🏠', label: 'Басты' },
+    { to: '/child/games', icon: '🎮', label: 'Ойындар' },
+    { to: '/child/village', icon: '⛺', label: 'Ауылым' },
+    { to: '/child/calm', icon: '🌿', label: 'Тыныштық' },
+  ];
+  const a11y = <A11yButton value={child.a11y} onChange={(s) => updateChild(child.id, (c) => (c.a11y = s))} />;
+
   return (
-    <>
+    <div className="shell">
       <a href="#main" className="skip-link">
         Негізгі мазмұнға өту
       </a>
-      <header className="app-header">
-        <div className="inner">
+      <div className="frame">
+        <aside className="sidebar" aria-label="Бала мәзірі">
           <Brand to="/child" />
-          <nav aria-label="Бала мәзірі" className="header-actions">
-            <NavLink className="btn ghost" to="/child" end>
-              <span aria-hidden="true">🏠</span> Басты
-            </NavLink>
-            <NavLink className="btn ghost" to="/child/games">
-              <span aria-hidden="true">🎮</span> Ойындар
-            </NavLink>
-            <NavLink className="btn ghost" to="/child/village">
-              <span aria-hidden="true">⛺</span> Ауылым
-            </NavLink>
-            <NavLink className="btn ghost" to="/child/calm">
-              <span aria-hidden="true">🌿</span> Тыныштық
-            </NavLink>
+          <nav className="side-links">
+            {links.map((l) => (
+              <NavLink key={l.to} to={l.to} end={l.end}>
+                <span className="ni" aria-hidden="true">
+                  {l.icon}
+                </span>
+                {l.label}
+              </NavLink>
+            ))}
           </nav>
-          <div className="header-actions">
-            <span className="stars-pill" aria-label={`${starsLeft} жұлдыз`}>
-              ⭐ {starsLeft}
-            </span>
-            <A11yButton value={child.a11y} onChange={(s) => updateChild(child.id, (c) => (c.a11y = s))} />
-            <button className="btn secondary" onClick={exit}>
-              {viaAdult ? 'Панельге оралу' : 'Шығу'}
-            </button>
-          </div>
-        </div>
-      </header>
-      <main id="main">
-        {limitReached ? (
-          <div className="card center stack" style={{ maxWidth: 560, margin: '40px auto' }}>
-            <div style={{ fontSize: '4rem' }} aria-hidden="true">
-              🌙
+          <div className="side-foot">
+            <div className="row" style={{ gap: 8 }}>
+              <span className="stars-pill" aria-label={`${starsLeft} жұлдыз`}>
+                ⭐ {starsLeft}
+              </span>
+              {a11y}
             </div>
-            <h1>Бүгінге жеткілікті!</h1>
-            <Bota text={`${child.name}, бүгін көп еңбек еттің. Енді демал, ойна, ертең тағы кездесеміз!`} />
-            <p className="muted">Бүгінгі уақыт шегі аяқталды. Оны ата-ана өз панелінен өзгерте алады.</p>
-            <button className="btn big" onClick={exit}>
-              Жарайды
-            </button>
+            <div className="user-card">
+              <span className="av" aria-hidden="true">
+                {child.avatar}
+              </span>
+              <span className="t">
+                <span className="n">{child.name}</span>
+                <span className="m">{new Date().getFullYear() - child.birthYear} жас</span>
+              </span>
+            </div>
+            <div className="side-links">
+              <button onClick={exit}>
+                <span className="ni" aria-hidden="true">
+                  {viaAdult ? '↩' : '🚪'}
+                </span>
+                {viaAdult ? 'Панельге оралу' : 'Шығу'}
+              </button>
+            </div>
           </div>
-        ) : (
-          <Outlet context={{ child, progress } satisfies ChildCtx} />
-        )}
-      </main>
+        </aside>
+
+        <div className="topbar">
+          <Brand to="/child" />
+          <span className="stars-pill" aria-label={`${starsLeft} жұлдыз`}>
+            ⭐ {starsLeft}
+          </span>
+          {a11y}
+          <button className="btn secondary icon" onClick={exit} aria-label={viaAdult ? 'Панельге оралу' : 'Шығу'} title={viaAdult ? 'Панельге оралу' : 'Шығу'}>
+            <span aria-hidden="true">{viaAdult ? '↩' : '🚪'}</span>
+          </button>
+        </div>
+
+        <main id="main" className="content">
+          {limitReached ? (
+            <div className="card center stack" style={{ maxWidth: 560, margin: '40px auto' }}>
+              <div style={{ fontSize: '4rem' }} aria-hidden="true">
+                🌙
+              </div>
+              <h1>Бүгінге жеткілікті!</h1>
+              <Bota text={`${child.name}, бүгін көп еңбек еттің. Енді демал, ойна, ертең тағы кездесеміз!`} />
+              <p className="muted">Бүгінгі уақыт шегі аяқталды. Оны ата-ана өз панелінен өзгерте алады.</p>
+              <button className="btn big" onClick={exit}>
+                Жарайды
+              </button>
+            </div>
+          ) : (
+            <Outlet context={{ child, progress } satisfies ChildCtx} />
+          )}
+        </main>
+
+        <nav className="bottom-nav" aria-label="Бала мәзірі">
+          {links.map((l) => (
+            <NavLink key={l.to} to={l.to} end={l.end}>
+              <span className="ni" aria-hidden="true">
+                {l.icon}
+              </span>
+              {l.label}
+            </NavLink>
+          ))}
+        </nav>
+      </div>
       {breakOpen && !limitReached && <BreakModal onClose={() => setBreakOpen(false)} />}
-    </>
+    </div>
   );
 }
 

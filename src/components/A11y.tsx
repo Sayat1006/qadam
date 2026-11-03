@@ -8,7 +8,7 @@ const ADULT_KEY = 'qadam.a11y.adult';
 export function applyA11y(s: A11ySettings) {
   const r = document.documentElement;
   r.style.setProperty('--scale', String(s.fontScale));
-  r.dataset.theme = s.theme;
+  r.dataset.theme = s.theme === 'dark' ? 'default' : s.theme;
   r.dataset.readable = String(s.readableFont);
   r.dataset.motion = s.reduceMotion ? 'reduce' : 'full';
   r.dataset.simple = String(s.simple);
@@ -59,10 +59,9 @@ export function A11yForm({ value, onChange }: { value: A11ySettings; onChange: (
           value={value.theme}
           onChange={(v) => set('theme', v)}
           options={[
-            { v: 'default', l: 'Жарық' },
-            { v: 'soft', l: 'Жұмсақ' },
+            { v: 'default', l: 'Қараңғы' },
+            { v: 'soft', l: 'Жарық' },
             { v: 'contrast', l: 'Жоғары контраст' },
-            { v: 'dark', l: 'Қараңғы' },
           ]}
         />
       </div>

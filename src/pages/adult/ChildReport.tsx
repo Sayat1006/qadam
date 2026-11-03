@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { A11yForm } from '../../components/A11y';
-import { Bar, Seg } from '../../components/ui';
+import { Bar, Hero, Seg } from '../../components/ui';
 import { getSubject, LEVEL_NAMES, subjects } from '../../content';
 import { summarize } from '../../lib/adaptive';
 import { addNote, loginChild, today, updateChild, updateProgress, useStore } from '../../lib/db';
@@ -60,22 +60,30 @@ export function ChildReport({ child, viewer }: { child: Child; viewer: Adult }) 
 
   return (
     <div className="stack">
-      <div className="row spread">
-        <div className="row">
-          <span style={{ fontSize: '2.6rem' }} aria-hidden="true">
-            {child.avatar}
-          </span>
-          <div>
-            <h2 style={{ margin: 0 }}>{child.name}</h2>
-            <span className="muted small">
-              {new Date().getFullYear() - child.birthYear} жас · ⭐ {p.stars - p.spentStars} жұлдыз
+      <Hero>
+        <div className="row spread">
+          <div className="row" style={{ gap: 16 }}>
+            <span className="bota-face" aria-hidden="true" style={{ width: 72, height: 72, fontSize: '2.4rem' }}>
+              {child.avatar}
             </span>
+            <div>
+              <p className="eyebrow" style={{ margin: 0 }}>
+                {viewer.role === 'parent' ? 'Менің балам' : 'Оқушы'}
+              </p>
+              <h2 style={{ margin: '2px 0', fontSize: '1.7rem' }}>{child.name}</h2>
+              <span className="muted small">
+                {new Date().getFullYear() - child.birthYear} жас · ⭐ {p.stars - p.spentStars} жұлдыз · бүгін {fmtMin(p.seconds[d] ?? 0)}
+              </span>
+            </div>
           </div>
+          <button className="btn big" onClick={openAsChild}>
+            Бала режимін ашу{' '}
+            <span className="arrow" aria-hidden="true">
+              ➜
+            </span>
+          </button>
         </div>
-        <button className="btn" onClick={openAsChild}>
-          <span aria-hidden="true">▶</span> Бала режимін ашу
-        </button>
-      </div>
+      </Hero>
 
       <div className="tabs" role="tablist" aria-label="Есеп бөлімдері">
         {(

@@ -1,22 +1,27 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { A11yButton, useAdultA11y } from '../components/A11y';
-import { Bota, Brand } from '../components/ui';
+import { Bota, Brand, Hero } from '../components/ui';
 import { createAdult, getDB, hasAdmin, loginAdult, loginChild, useStore } from '../lib/db';
 
 export const PICS = ['🍎', '🐱', '⭐', '🌸', '🚗', '🐟', '☀️', '🏠', '⚽'];
 
-function PublicHeader() {
+function PublicFrame({ children }: { children: ReactNode }) {
   const [a11y, setA11y] = useAdultA11y();
   return (
-    <header className="app-header">
-      <div className="inner">
-        <Brand />
-        <div className="header-actions">
+    <div className="shell">
+      <a href="#main" className="skip-link">
+        Негізгі мазмұнға өту
+      </a>
+      <div className="frame" style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 24, right: 24, zIndex: 5 }}>
           <A11yButton value={a11y} onChange={setA11y} />
         </div>
+        <main id="main" className="content solo no-bottom-nav" style={{ maxWidth: 'none' }}>
+          {children}
+        </main>
       </div>
-    </header>
+    </div>
   );
 }
 
@@ -29,49 +34,51 @@ export function Landing() {
   }
   const setup = !hasAdmin();
   return (
-    <>
-      <PublicHeader />
-      <main id="main">
-        <section className="hero">
-          <div>
-            <h1>Әр балаға — өз қадамы</h1>
-            <div className="ornament decor" aria-hidden="true" />
-            <p style={{ fontSize: '1.15rem' }}>
-              <strong>Qadam</strong> — 6–15 жастағы балаларға арналған білім беру платформасы. Әр бала өз қарқынымен оқиды: тапсырмалар баланың өз деңгейіне қарай
-              бейімделеді, ал ойындар оқуды қызықты етеді.
-            </p>
-            <div className="chips">
-              <span className="chip">🌱→🦅 5 деңгей</span>
-              <span className="chip">💡 3 сатылы кеңес</span>
-              <span className="chip">🎮 Білім беретін ойындар</span>
-              <span className="chip">👨‍👩‍👧 Ата-ана мен мұғалім панелі</span>
-              <span className="chip">🔊 Дауыстап оқу</span>
-            </div>
+    <PublicFrame>
+      <div className="auth">
+        <Hero className="auth-hero" glow="center">
+          <div className="hero-brand">
+            <Brand />
           </div>
-          <div>{setup ? <SetupAdmin /> : <AdultLogin />}</div>
-        </section>
-        {!setup && (
-          <section className="card soft">
-            <div className="row spread">
-              <div>
-                <h2 style={{ margin: 0 }}>
-                  <span aria-hidden="true">🧒</span> Мен баламын
-                </h2>
-                <p className="muted" style={{ margin: 0 }}>
-                  Атыңды тауып, сурет-құпиясөзіңді бас.
-                </p>
-              </div>
-              <Link to="/child-login" className="btn big">
-                Кіру <span aria-hidden="true">➜</span>
-              </Link>
-            </div>
-          </section>
-        )}
-        <p className="muted small center" style={{ marginTop: 24 }}>
-          Тіркелгіні тек әкімші ашады. Бұл нұсқада деректер осы құрылғының браузерінде сақталады.
-        </p>
-      </main>
-    </>
+          <div className="spacer" />
+          <p className="eyebrow">6–15 жастағы оқушыларға</p>
+          <div className="chips">
+            <span className="chip">Математика</span>
+            <span className="chip">Қазақ тілі</span>
+            <span className="chip">Дүниетану</span>
+            <span className="chip">Ағылшын тілі</span>
+          </div>
+          <h1>Әр балаға — өз қадамы</h1>
+          <p style={{ fontSize: '1.05rem', maxWidth: 520, margin: 0 }}>
+            Сабақтар, ойындар және күнделікті кішкентай мақсаттар. Тапсырмалар баланың өз деңгейіне қарай бейімделеді, ал ата-ана мен мұғалім
+            оның жетістігін бір жерден көреді.
+          </p>
+        </Hero>
+        <div className="auth-side">
+          {setup ? <SetupAdmin /> : <AdultLogin />}
+          {!setup && (
+            <Link to="/child-login" className="card auth-card row spread" style={{ textDecoration: 'none', color: 'inherit', flexWrap: 'nowrap' }}>
+              <span className="row" style={{ gap: 14 }}>
+                <span className="bota-face" aria-hidden="true">
+                  🧒
+                </span>
+                <span>
+                  <strong style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem' }}>Мен оқушымын</strong>
+                  <br />
+                  <span className="muted small">Атыңды тап та, сурет-құпиясөзіңді бас</span>
+                </span>
+              </span>
+              <span className="btn icon" aria-hidden="true">
+                ➜
+              </span>
+            </Link>
+          )}
+          <p className="muted small center" style={{ margin: 0 }}>
+            Тіркелгіні мектеп әкімшісі ашады.
+          </p>
+        </div>
+      </div>
+    </PublicFrame>
   );
 }
 
@@ -91,9 +98,13 @@ function AdultLogin() {
     else navigate('/' + a.role);
   }
   return (
-    <form className="card stack" onSubmit={submit} aria-labelledby="login-h">
-      <h2 id="login-h">Ересектерге кіру</h2>
-      <p className="muted small">Ата-ана, мұғалім немесе әкімші</p>
+    <form className="card stack auth-card" onSubmit={submit} aria-labelledby="login-h">
+      <div>
+        <h2 id="login-h">Qadam-ға кіру</h2>
+        <p className="muted" style={{ margin: '6px 0 0' }}>
+          Ата-ана, мұғалім немесе әкімші
+        </p>
+      </div>
       <label className="field">
         <span>Логин</span>
         <input value={u} onChange={(e) => setU(e.target.value)} autoComplete="username" required />
@@ -107,7 +118,7 @@ function AdultLogin() {
           {err}
         </p>
       )}
-      <button className="btn big" disabled={busy}>
+      <button className="btn big full" disabled={busy}>
         Кіру
       </button>
     </form>
@@ -134,7 +145,7 @@ function SetupAdmin() {
     }
   }
   return (
-    <form className="card stack" onSubmit={submit} aria-labelledby="setup-h">
+    <form className="card stack auth-card" onSubmit={submit} aria-labelledby="setup-h">
       <h2 id="setup-h">Алғашқы баптау</h2>
       <Bota text="Сәлеметсіз бе! Алдымен әкімші тіркелгісін ашайық. Кейін әкімші ата-ана, мұғалім және бала тіркелгілерін қосады." />
       <label className="field">
@@ -158,7 +169,7 @@ function SetupAdmin() {
           {err}
         </p>
       )}
-      <button className="btn big">Әкімшіні құру</button>
+      <button className="btn big full">Әкімшіні құру</button>
     </form>
   );
 }
@@ -183,9 +194,8 @@ export function ChildLogin() {
   }
 
   return (
-    <>
-      <PublicHeader />
-      <main id="main" className="stack">
+    <PublicFrame>
+      <div className="stack" style={{ maxWidth: 960, margin: '0 auto' }}>
         <div className="row">
           <Link className="btn secondary" to="/">
             <span aria-hidden="true">←</span> Артқа
@@ -244,7 +254,7 @@ export function ChildLogin() {
             </button>
           </div>
         )}
-      </main>
-    </>
+      </div>
+    </PublicFrame>
   );
 }

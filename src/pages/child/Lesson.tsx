@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { TaskView, type TaskResult } from '../../components/TaskView';
-import { Bota } from '../../components/ui';
+import { Bota, Hero } from '../../components/ui';
 import { getSubject, LEVEL_NAMES } from '../../content';
 import { buildLesson, decideLevel } from '../../lib/adaptive';
 import { getDB, updateProgress } from '../../lib/db';
@@ -82,7 +82,8 @@ export function Lesson() {
   if (finished) {
     const ln = levelUp ? LEVEL_NAMES[levelUp] : null;
     return (
-      <div className="card stack center" style={{ maxWidth: 640, margin: '0 auto' }}>
+      <Hero glow="center" className="center" as="div">
+        <div className="stack" style={{ maxWidth: 640, margin: '0 auto' }}>
         <div style={{ fontSize: '4rem' }} aria-hidden="true">
           {levelUp ? ln!.icon : '🏆'}
         </div>
@@ -94,7 +95,7 @@ export function Lesson() {
               : `Жарайсың, ${child.name}! ${items.length} тапсырманың ішінде ${clean} тапсырманы бірден таптың. Сен ${earned} жұлдыз жинадың!`
           }
         />
-        <p style={{ fontSize: '1.6rem', fontWeight: 800 }} aria-label={`${earned} жұлдыз`}>
+        <p className="stars-pill" style={{ fontSize: '1.4rem', height: 52, padding: '0 22px', margin: '0 auto' }} aria-label={`${earned} жұлдыз`}>
           ⭐ +{earned}
         </p>
         <div className="row" style={{ justifyContent: 'center' }}>
@@ -108,7 +109,8 @@ export function Lesson() {
             <span aria-hidden="true">⛺</span> Ауылыма
           </Link>
         </div>
-      </div>
+        </div>
+      </Hero>
     );
   }
 

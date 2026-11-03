@@ -1,5 +1,6 @@
 /* Дауыстап оқу (TTS) және жұмсақ дыбыс белгілері */
 import { isLatin, normalizeKk } from './kkspeech';
+import { synthesize, type IssaiVoice } from './piper';
 
 let voices: SpeechSynthesisVoice[] = [];
 function refreshVoices() {
@@ -18,6 +19,7 @@ export function canSpeak() {
   return typeof window !== 'undefined' && ('speechSynthesis' in window || 'Audio' in window);
 }
 
+
 /** Қазақ дауысы болса — соны, болмаса орыс дауысын (кирилл мәтінін оқи алады) таңдайды */
 function pickVoice(lang: string) {
   const want = lang.slice(0, 2);
@@ -28,46 +30,33 @@ function pickVoice(lang: string) {
   );
 }
 
-/* ---------- ISSAI (Soyle) дауысы: /api/tts арқылы ---------- */
+/* ---------- ISSAI дауысы: браузердің өзінде (Piper) ---------- */
 
-export type VoiceKind = 'female' | 'male';
-let voicePref: VoiceKind = 'female';
+export type VoiceKind = 'browser' | IssaiVoice;
+let voicePref: VoiceKind = 'browser';
 let ratePref = 1;
-export function setVoicePrefs(v: VoiceKind, rate = 1) {
-  voicePref = v;
+export function setVoicePrefs(v: VoiceKind | undefined, rate = 1) {
+  voicePref = v && v !== ('female' as string) && v !== ('male' as string) ? v : 'browser';
   ratePref = rate;
 }
-
-// Сервер дауысы қолжетімсіз болса (кілт жоқ, лимит біткен) — сессия бойы браузер дауысын қолданамыз
-let remoteState: 'unknown' | 'ok' | 'off' = 'unknown';
-export function remoteVoiceState() {
-  return remoteState;
+export function currentVoice() {
+  return voicePref;
 }
+
 const cache = new Map<string, Promise<string | null>>();
 let current: HTMLAudioElement | null = null;
 let token = 0;
 
-function remoteUrl(text: string, lang: 'kaz' | 'eng') {
-  return `/api/tts?lang=${lang}&voice=${voicePref}&text=${encodeURIComponent(text)}`;
-}
-
-function fetchAudio(text: string, lang: 'kaz' | 'eng'): Promise<string | null> {
-  const key = `${lang}|${voicePref}|${text}`;
+function issaiAudio(text: string, v: IssaiVoice): Promise<string | null> {
+  const key = `${v}|${ratePref}|${text}`;
   const hit = cache.get(key);
   if (hit) return hit;
-  const p = fetch(remoteUrl(text, lang))
-    .then(async (r) => {
-      if (r.status === 503 || r.status === 402 || r.status === 403) {
-        remoteState = 'off';
-        return null;
-      }
-      if (!r.ok || !(r.headers.get('content-type') || '').startsWith('audio/')) return null;
-      remoteState = 'ok';
-      return URL.createObjectURL(await r.blob());
-    })
+  // ratePref < 1 → баяуырақ (length_scale үлкейеді)
+  const p = synthesize(text, v, ratePref < 1 ? 1 / ratePref : 1)
+    .then((blob) => URL.createObjectURL(blob))
     .catch(() => null);
   cache.set(key, p);
-  if (cache.size > 150) {
+  if (cache.size > 120) {
     const first = cache.keys().next().value as string;
     cache.get(first)?.then((u) => u && URL.revokeObjectURL(u));
     cache.delete(first);
@@ -76,12 +65,11 @@ function fetchAudio(text: string, lang: 'kaz' | 'eng'): Promise<string | null> {
   return p;
 }
 
-/** Дауысты алдын ала жүктеу (тапсырма ашылғанда) */
+/** Батырманың үстіне келгенде дыбысты алдын ала дайындау */
 export function prefetchSpeech(text: string) {
-  if (remoteState === 'off' || !text) return;
-  const latin = isLatin(text);
-  const clean = latin ? text : normalizeKk(text);
-  if (clean) void fetchAudio(clean, latin ? 'eng' : 'kaz');
+  if (voicePref === 'browser' || !text || isLatin(text)) return;
+  const clean = normalizeKk(text);
+  if (clean) void issaiAudio(clean, voicePref);
 }
 
 function browserSpeak(text: string, lang: string, rate: number) {
@@ -107,16 +95,16 @@ export function speak(text: string, lang = 'kk-KZ', rate = 0.85) {
   const latin = isLatin(text) || lang.startsWith('en');
   const clean = latin ? text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/gu, '') : normalizeKk(text);
   if (!clean) return;
-  const browserLang = latin ? 'en-US' : lang;
-  if (remoteState === 'off') return browserSpeak(clean, browserLang, rate);
+  // Ағылшын мәтіні және ISSAI дауысы таңдалмаса — браузер дауысы
+  if (latin || voicePref === 'browser') return browserSpeak(clean, latin ? 'en-US' : lang, rate * ratePref);
   const my = ++token;
-  fetchAudio(clean, latin ? 'eng' : 'kaz').then((url) => {
+  const v = voicePref;
+  issaiAudio(clean, v).then((url) => {
     if (my !== token) return; // басқа мәтін басылды
-    if (!url) return browserSpeak(clean, browserLang, rate);
+    if (!url) return browserSpeak(clean, lang, rate * ratePref);
     const a = new Audio(url);
-    a.playbackRate = ratePref;
     current = a;
-    a.play().catch(() => browserSpeak(clean, browserLang, rate));
+    a.play().catch(() => browserSpeak(clean, lang, rate * ratePref));
   });
 }
 

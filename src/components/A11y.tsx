@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { defaultA11y } from '../lib/db';
 import type { A11ySettings } from '../lib/types';
-import { setVoicePrefs, speak } from '../lib/media';
+import { setVoicePrefs, speak, type VoiceKind } from '../lib/media';
+import { downloadVoice, isDownloaded, ISSAI_VOICES, piperSupported, removeVoice, type IssaiVoice } from '../lib/piper';
 import { Modal, Seg } from './ui';
 
 const ADULT_KEY = 'qadam.a11y.adult';
@@ -13,7 +14,7 @@ export function applyA11y(s: A11ySettings) {
   r.dataset.readable = String(s.readableFont);
   r.dataset.motion = s.reduceMotion ? 'reduce' : 'full';
   r.dataset.simple = String(s.simple);
-  setVoicePrefs(s.voice ?? 'female', s.speechRate ?? 1);
+  setVoicePrefs((s.voice ?? 'browser') as VoiceKind, s.speechRate ?? 1);
 }
 
 export function loadAdultA11y(): A11ySettings {
@@ -72,41 +73,7 @@ export function A11yForm({ value, onChange }: { value: A11ySettings; onChange: (
         <input type="checkbox" checked={value.readableFont} onChange={(e) => set('readableFont', e.target.checked)} />
         Оқуға жеңіл қаріп (кең аралық)
       </label>
-      <div>
-        <p className="small" style={{ fontWeight: 800, marginBottom: 6 }}>
-          Дауыс
-        </p>
-        <div className="row">
-          <Seg
-            label="Дауыс түрі"
-            value={value.voice ?? 'female'}
-            onChange={(v) => set('voice', v)}
-            options={[
-              { v: 'female', l: 'Әйел дауысы' },
-              { v: 'male', l: 'Ер дауысы' },
-            ]}
-          />
-          <Seg
-            label="Дауыс жылдамдығы"
-            value={value.speechRate ?? 1}
-            onChange={(v) => set('speechRate', v)}
-            options={[
-              { v: 0.8, l: 'Баяу' },
-              { v: 1, l: 'Қалыпты' },
-            ]}
-          />
-          <button
-            type="button"
-            className="btn secondary"
-            onClick={() => {
-              setVoicePrefs(value.voice ?? 'female', value.speechRate ?? 1);
-              speak('Сәлем! Мен — Ботамын. Бүгін 3 + 2 = 5 екенін бірге есептейміз.');
-            }}
-          >
-            🔊 Тыңдап көру
-          </button>
-        </div>
-      </div>
+      <VoicePicker value={value.voice ?? 'browser'} rate={value.speechRate ?? 1} onVoice={(v) => set('voice', v)} onRate={(r) => set('speechRate', r)} />
       <label className="check">
         <input type="checkbox" checked={value.autoRead} onChange={(e) => set('autoRead', e.target.checked)} />
         Тапсырманы автоматты түрде дауыстап оқу
@@ -161,4 +128,125 @@ export function useAdultA11y() {
     saveAdultA11y(s);
   }, [s]);
   return [s, setS] as const;
+}
+
+const SAMPLE = 'Сәлем! Мен — Ботамын. Бүгін 3 + 2 = 5 екенін бірге есептейміз.';
+
+/** Дауыс таңдау: браузер дауысы немесе ISSAI дауыстары (құрылғыға бір рет жүктеледі) */
+function VoicePicker({ value, rate, onVoice, onRate }: { value: string; rate: number; onVoice: (v: string) => void; onRate: (r: number) => void }) {
+  const [have, setHave] = useState<Record<string, boolean>>({});
+  const [busy, setBusy] = useState<{ id: IssaiVoice; loaded: number; total: number } | null>(null);
+  const [err, setErr] = useState('');
+  const supported = piperSupported();
+
+  useEffect(() => {
+    if (!supported) return;
+    let alive = true;
+    Promise.all(ISSAI_VOICES.map(async (v) => [v.id, await isDownloaded(v.id)] as const)).then((r) => alive && setHave(Object.fromEntries(r)));
+    return () => {
+      alive = false;
+    };
+  }, [supported, busy]);
+
+  async function get(id: IssaiVoice) {
+    setErr('');
+    setBusy({ id, loaded: 0, total: 0 });
+    try {
+      await downloadVoice(id, (loaded, total) => setBusy({ id, loaded, total }));
+      onVoice(id);
+    } catch (e) {
+      setErr('Дауыс жүктелмеді. Интернетті тексеріп, қайта көріңіз.' + (e instanceof Error ? ` (${e.message})` : ''));
+    }
+    setBusy(null);
+  }
+
+  const mb = (n: number) => `${(n / 1048576).toFixed(1)} МБ`;
+  return (
+    <div className="stack" style={{ gap: 8 }}>
+      <p className="small" style={{ fontWeight: 800, margin: 0 }}>
+        Дауыс
+      </p>
+      <p className="muted small" style={{ margin: 0 }}>
+        ISSAI қазақ дауыстары құрылғыңызға бір рет жүктеледі, содан кейін интернетсіз де жұмыс істейді. Дауыстар: ISSAI, Назарбаев Университеті · KazakhTTS2.
+      </p>
+      <div className="voice-list" role="radiogroup" aria-label="Дауыс">
+        <label className={`voice-opt ${value === 'browser' ? 'on' : ''}`}>
+          <input type="radio" name="voice" checked={value === 'browser'} onChange={() => onVoice('browser')} />
+          <span>
+            <strong>Құрылғы дауысы</strong>
+            <span className="muted small"> · жүктеуді қажет етпейді</span>
+          </span>
+        </label>
+        {ISSAI_VOICES.map((v) => {
+          const ok = have[v.id];
+          const loading = busy?.id === v.id;
+          return (
+            <div key={v.id} className={`voice-opt ${value === v.id ? 'on' : ''}`}>
+              <label style={{ display: 'flex', gap: 10, alignItems: 'center', flex: 1, cursor: ok ? 'pointer' : 'default' }}>
+                <input type="radio" name="voice" checked={value === v.id} disabled={!ok} onChange={() => onVoice(v.id)} />
+                <span>
+                  <strong>ISSAI · {v.label}</strong>
+                  <span className="muted small"> · {v.note}</span>
+                </span>
+              </label>
+              {!supported ? (
+                <span className="muted small">Бұл браузерде қолжетімсіз</span>
+              ) : loading ? (
+                <span className="small" aria-live="polite">
+                  {busy.total ? `${Math.round((100 * busy.loaded) / busy.total)}% · ${mb(busy.total)}` : mb(busy.loaded)}
+                </span>
+              ) : ok ? (
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={async () => {
+                    await removeVoice(v.id);
+                    if (value === v.id) onVoice('browser');
+                    setHave((h) => ({ ...h, [v.id]: false }));
+                  }}
+                >
+                  Жою
+                </button>
+              ) : (
+                <button type="button" className="btn secondary" disabled={!!busy} onClick={() => get(v.id)}>
+                  Жүктеу
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {busy && (
+        <div className="bar" role="progressbar" aria-label="Дауыс жүктелуде" aria-valuemin={0} aria-valuemax={100} aria-valuenow={busy.total ? Math.round((100 * busy.loaded) / busy.total) : 0}>
+          <span style={{ width: `${busy.total ? (100 * busy.loaded) / busy.total : 5}%` }} />
+        </div>
+      )}
+      {err && (
+        <p className="error small" role="alert">
+          {err}
+        </p>
+      )}
+      <div className="row">
+        <Seg
+          label="Дауыс жылдамдығы"
+          value={rate}
+          onChange={onRate}
+          options={[
+            { v: 0.8, l: 'Баяу' },
+            { v: 1, l: 'Қалыпты' },
+          ]}
+        />
+        <button
+          type="button"
+          className="btn secondary"
+          onClick={() => {
+            setVoicePrefs(value as VoiceKind, rate);
+            speak(SAMPLE);
+          }}
+        >
+          🔊 Тыңдап көру
+        </button>
+      </div>
+    </div>
+  );
 }

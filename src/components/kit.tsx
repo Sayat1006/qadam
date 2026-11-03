@@ -1,5 +1,5 @@
 /* QADAM дизайн жүйесінің ортақ компоненттері */
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 
 const WEEKDAYS = ['жексенбі', 'дүйсенбі', 'сейсенбі', 'сәрсенбі', 'бейсенбі', 'жұма', 'сенбі'];
 const MONTHS = ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'мамыр', 'маусым', 'шілде', 'тамыз', 'қыркүйек', 'қазан', 'қараша', 'желтоқсан'];
@@ -67,6 +67,7 @@ export function Reveal({ children, delay = 0, className = '', as: Tag = 'div', s
 
 /** Прогресс сақинасы (SVG) */
 export function ProgressRing({ value, max = 100, size = 120, stroke = 12, label, children }: { value: number; max?: number; size?: number; stroke?: number; label: string; children?: ReactNode }) {
+  const gid = 'ring' + useId().replace(/:/g, '');
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const pct = Math.max(0, Math.min(1, max ? value / max : 0));
@@ -79,7 +80,7 @@ export function ProgressRing({ value, max = 100, size = 120, stroke = 12, label,
     <div className="ring" style={{ width: size, height: size }} role="img" aria-label={label}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
         <defs>
-          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#5145D8" />
             <stop offset="0.6" stopColor="#4388FF" />
             <stop offset="1" stopColor="#65D8F2" />
@@ -91,7 +92,7 @@ export function ProgressRing({ value, max = 100, size = 120, stroke = 12, label,
           cy={size / 2}
           r={r}
           fill="none"
-          stroke="url(#ringGrad)"
+          stroke={`url(#${gid})`}
           strokeWidth={stroke}
           strokeLinecap="round"
           strokeDasharray={c}

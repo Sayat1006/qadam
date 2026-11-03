@@ -3,16 +3,17 @@ import { Link } from 'react-router-dom';
 import { canSpeak, prefetchSpeech, speak } from '../lib/media';
 
 export function Brand({ to = '/' }: { to?: string }) {
+  const gid = 'brandG' + useId().replace(/:/g, '');
   return (
     <Link className="brand" to={to}>
       <svg className="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
         <defs>
-          <linearGradient id="brandG" x1="0" y1="0" x2="1" y2="1">
+          <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
             <stop offset="0" stopColor="#5145D8" />
             <stop offset="1" stopColor="#4388FF" />
           </linearGradient>
         </defs>
-        <rect width="64" height="64" rx="18" fill="url(#brandG)" />
+        <rect width="64" height="64" rx="18" fill={`url(#${gid})`} />
         <path d="M16 44h10V34h10V24h12" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
         <circle cx="48" cy="18" r="5" fill="#FFCA70" />
       </svg>

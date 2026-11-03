@@ -2960,3 +2960,222 @@ table.list thead th {
   accent-color: var(--primary);
   flex: none;
 }
+
+/* ===== Менің ауылым ===== */
+.vwrap {
+  position: relative;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-lift);
+  border: 1px solid var(--border);
+  background: #8ec5ff;
+}
+.vscene {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-height: 240px;
+  touch-action: manipulation;
+}
+.vlevel {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 18px;
+}
+.vlevel .bar {
+  margin-top: 6px;
+}
+.vlevel-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-size: 1.7rem;
+  background: linear-gradient(135deg, var(--primary-soft), var(--sky-soft));
+  flex: none;
+}
+.v-night {
+  filter: brightness(0.62) saturate(0.75);
+}
+.v-dusk {
+  filter: brightness(0.88) sepia(0.15);
+}
+.v-smoke {
+  opacity: 0;
+  animation: vsmoke 4s ease-out infinite;
+}
+@keyframes vsmoke {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) scale(0.5);
+  }
+  20% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(14px, -46px) scale(1.6);
+  }
+}
+.v-item {
+  cursor: pointer;
+}
+.v-item > * {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+}
+.v-sway {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: vsway 5s ease-in-out infinite;
+}
+@keyframes vsway {
+  50% {
+    transform: rotate(1.8deg);
+  }
+}
+.v-graze {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: vgraze 3.2s ease-in-out infinite;
+}
+.v-graze.slow {
+  animation-duration: 4.6s;
+}
+@keyframes vgraze {
+  40% {
+    transform: translateY(-2px) rotate(-2deg);
+  }
+  70% {
+    transform: translateY(0) rotate(1deg);
+  }
+}
+.v-jump > * {
+  animation: vjump 600ms var(--spring);
+}
+@keyframes vjump {
+  40% {
+    transform: translateY(-24px) scale(1.08);
+  }
+}
+.v-new > * {
+  animation: vnew 900ms var(--spring) both;
+}
+@keyframes vnew {
+  from {
+    transform: scale(0) translateY(20px);
+    opacity: 0;
+  }
+}
+.v-cloud {
+  animation: vcloud 90s linear infinite;
+}
+@keyframes vcloud {
+  from {
+    transform: translateX(-260px);
+  }
+  to {
+    transform: translateX(1100px);
+  }
+}
+.v-eagle {
+  animation: veagle 26s linear infinite;
+}
+@keyframes veagle {
+  0% {
+    transform: translate(-80px, 30px);
+  }
+  50% {
+    transform: translate(520px, -10px);
+  }
+  100% {
+    transform: translate(1100px, 40px);
+  }
+}
+.v-star {
+  animation: twinkle 3s ease-in-out infinite;
+}
+@keyframes twinkle {
+  50% {
+    opacity: 0.3;
+  }
+}
+.v-river {
+  animation: shimmer-r 6s ease-in-out infinite;
+}
+@keyframes shimmer-r {
+  50% {
+    opacity: 0.85;
+  }
+}
+.v-flag {
+  transform-box: fill-box;
+  transform-origin: 0 50%;
+  animation: vflag 2.4s ease-in-out infinite;
+}
+@keyframes vflag {
+  50% {
+    transform: skewY(-6deg) scaleX(0.94);
+  }
+}
+.shop-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 6px;
+}
+.shop-card .btn {
+  width: 100%;
+  margin-top: auto;
+}
+.shop-art {
+  width: 84px;
+  height: 84px;
+  border-radius: 26px;
+  display: grid;
+  place-items: center;
+  font-size: 2.8rem;
+  background: linear-gradient(160deg, #e7f6ff, #dff3e4);
+  box-shadow: inset 0 -5px 0 rgba(16, 27, 61, 0.08), 0 10px 20px rgba(81, 69, 216, 0.12);
+  transition: transform var(--dur-card) var(--spring);
+}
+.shop-card.ok:hover .shop-art {
+  transform: translateY(-4px) rotate(-4deg) scale(1.05);
+}
+.shop-card.locked .shop-art,
+.shop-card.full .shop-art {
+  filter: saturate(0.4);
+  opacity: 0.7;
+}
+
+
+.vpan-hint {
+  display: none;
+  text-align: center;
+  margin: -6px 0 0;
+}
+@media (max-width: 720px) {
+  /* Телефонда даланы саусақпен жылжытып қарауға болады */
+  .vwrap {
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .vwrap::-webkit-scrollbar {
+    display: none;
+  }
+  .vscene {
+    width: 720px;
+    max-width: none;
+  }
+  .vpan-hint {
+    display: block;
+  }
+  .village-stars {
+    display: none !important;
+  }
+}

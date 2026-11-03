@@ -20,6 +20,8 @@ export interface A11ySettings {
   sound: boolean;
   autoRead: boolean; // тапсырманы автоматты түрде дауыстап оқу
   simple: boolean; // қарапайым интерфейс: декорсыз, бір мақсат
+  voice?: 'female' | 'male'; // ISSAI дауысы
+  speechRate?: number; // дауыс жылдамдығы
 }
 
 export interface ChildSettings {

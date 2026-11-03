@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { canSpeak, speak } from '../lib/media';
+import { canSpeak, prefetchSpeech, speak } from '../lib/media';
 
 export function Brand({ to = '/' }: { to?: string }) {
   return (
@@ -88,7 +88,15 @@ export function Hero({ children, className = '', glow = 'right', as: Tag = 'sect
 export function SpeakButton({ text, label = 'Тыңдау', lang }: { text: string; label?: string; lang?: string }) {
   if (!canSpeak()) return null;
   return (
-    <button type="button" className="btn secondary icon" onClick={() => speak(text, lang)} aria-label={`${label}: ${text}`} title={label}>
+    <button
+      type="button"
+      className="btn secondary icon"
+      onPointerEnter={() => prefetchSpeech(text)}
+      onFocus={() => prefetchSpeech(text)}
+      onClick={() => speak(text, lang)}
+      aria-label={`${label}: ${text}`}
+      title={label}
+    >
       <span aria-hidden="true">🔊</span>
     </button>
   );

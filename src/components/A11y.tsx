@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { defaultA11y } from '../lib/db';
 import type { A11ySettings } from '../lib/types';
+import { setVoicePrefs, speak } from '../lib/media';
 import { Modal, Seg } from './ui';
 
 const ADULT_KEY = 'qadam.a11y.adult';
@@ -12,6 +13,7 @@ export function applyA11y(s: A11ySettings) {
   r.dataset.readable = String(s.readableFont);
   r.dataset.motion = s.reduceMotion ? 'reduce' : 'full';
   r.dataset.simple = String(s.simple);
+  setVoicePrefs(s.voice ?? 'female', s.speechRate ?? 1);
 }
 
 export function loadAdultA11y(): A11ySettings {
@@ -70,6 +72,41 @@ export function A11yForm({ value, onChange }: { value: A11ySettings; onChange: (
         <input type="checkbox" checked={value.readableFont} onChange={(e) => set('readableFont', e.target.checked)} />
         Оқуға жеңіл қаріп (кең аралық)
       </label>
+      <div>
+        <p className="small" style={{ fontWeight: 800, marginBottom: 6 }}>
+          Дауыс
+        </p>
+        <div className="row">
+          <Seg
+            label="Дауыс түрі"
+            value={value.voice ?? 'female'}
+            onChange={(v) => set('voice', v)}
+            options={[
+              { v: 'female', l: 'Әйел дауысы' },
+              { v: 'male', l: 'Ер дауысы' },
+            ]}
+          />
+          <Seg
+            label="Дауыс жылдамдығы"
+            value={value.speechRate ?? 1}
+            onChange={(v) => set('speechRate', v)}
+            options={[
+              { v: 0.8, l: 'Баяу' },
+              { v: 1, l: 'Қалыпты' },
+            ]}
+          />
+          <button
+            type="button"
+            className="btn secondary"
+            onClick={() => {
+              setVoicePrefs(value.voice ?? 'female', value.speechRate ?? 1);
+              speak('Сәлем! Мен — Ботамын. Бүгін 3 + 2 = 5 екенін бірге есептейміз.');
+            }}
+          >
+            🔊 Тыңдап көру
+          </button>
+        </div>
+      </div>
       <label className="check">
         <input type="checkbox" checked={value.autoRead} onChange={(e) => set('autoRead', e.target.checked)} />
         Тапсырманы автоматты түрде дауыстап оқу

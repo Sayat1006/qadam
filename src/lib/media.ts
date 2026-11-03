@@ -1,4 +1,5 @@
 /* Дауыстап оқу (TTS) және жұмсақ дыбыс белгілері */
+import { isLatin, normalizeKk } from './kkspeech';
 
 let voices: SpeechSynthesisVoice[] = [];
 function refreshVoices() {
@@ -14,7 +15,7 @@ if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
 }
 
 export function canSpeak() {
-  return typeof window !== 'undefined' && 'speechSynthesis' in window;
+  return typeof window !== 'undefined' && ('speechSynthesis' in window || 'Audio' in window);
 }
 
 /** Қазақ дауысы болса — соны, болмаса орыс дауысын (кирилл мәтінін оқи алады) таңдайды */
@@ -27,11 +28,67 @@ function pickVoice(lang: string) {
   );
 }
 
-export function speak(text: string, lang = 'kk-KZ', rate = 0.85) {
-  if (!canSpeak() || !text) return;
+/* ---------- ISSAI (Soyle) дауысы: /api/tts арқылы ---------- */
+
+export type VoiceKind = 'female' | 'male';
+let voicePref: VoiceKind = 'female';
+let ratePref = 1;
+export function setVoicePrefs(v: VoiceKind, rate = 1) {
+  voicePref = v;
+  ratePref = rate;
+}
+
+// Сервер дауысы қолжетімсіз болса (кілт жоқ, лимит біткен) — сессия бойы браузер дауысын қолданамыз
+let remoteState: 'unknown' | 'ok' | 'off' = 'unknown';
+export function remoteVoiceState() {
+  return remoteState;
+}
+const cache = new Map<string, Promise<string | null>>();
+let current: HTMLAudioElement | null = null;
+let token = 0;
+
+function remoteUrl(text: string, lang: 'kaz' | 'eng') {
+  return `/api/tts?lang=${lang}&voice=${voicePref}&text=${encodeURIComponent(text)}`;
+}
+
+function fetchAudio(text: string, lang: 'kaz' | 'eng'): Promise<string | null> {
+  const key = `${lang}|${voicePref}|${text}`;
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const p = fetch(remoteUrl(text, lang))
+    .then(async (r) => {
+      if (r.status === 503 || r.status === 402 || r.status === 403) {
+        remoteState = 'off';
+        return null;
+      }
+      if (!r.ok || !(r.headers.get('content-type') || '').startsWith('audio/')) return null;
+      remoteState = 'ok';
+      return URL.createObjectURL(await r.blob());
+    })
+    .catch(() => null);
+  cache.set(key, p);
+  if (cache.size > 150) {
+    const first = cache.keys().next().value as string;
+    cache.get(first)?.then((u) => u && URL.revokeObjectURL(u));
+    cache.delete(first);
+  }
+  p.then((u) => !u && cache.delete(key));
+  return p;
+}
+
+/** Дауысты алдын ала жүктеу (тапсырма ашылғанда) */
+export function prefetchSpeech(text: string) {
+  if (remoteState === 'off' || !text) return;
+  const latin = isLatin(text);
+  const clean = latin ? text : normalizeKk(text);
+  if (clean) void fetchAudio(clean, latin ? 'eng' : 'kaz');
+}
+
+function browserSpeak(text: string, lang: string, rate: number) {
+  if (!('speechSynthesis' in window)) return;
   try {
     window.speechSynthesis.cancel();
-    const u = new SpeechSynthesisUtterance(text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/gu, ''));
+    const u = new SpeechSynthesisUtterance(text);
     const v = pickVoice(lang);
     if (v) {
       u.voice = v;
@@ -44,8 +101,30 @@ export function speak(text: string, lang = 'kk-KZ', rate = 0.85) {
   }
 }
 
+export function speak(text: string, lang = 'kk-KZ', rate = 0.85) {
+  if (typeof window === 'undefined' || !text) return;
+  stopSpeaking();
+  const latin = isLatin(text) || lang.startsWith('en');
+  const clean = latin ? text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/gu, '') : normalizeKk(text);
+  if (!clean) return;
+  const browserLang = latin ? 'en-US' : lang;
+  if (remoteState === 'off') return browserSpeak(clean, browserLang, rate);
+  const my = ++token;
+  fetchAudio(clean, latin ? 'eng' : 'kaz').then((url) => {
+    if (my !== token) return; // басқа мәтін басылды
+    if (!url) return browserSpeak(clean, browserLang, rate);
+    const a = new Audio(url);
+    a.playbackRate = ratePref;
+    current = a;
+    a.play().catch(() => browserSpeak(clean, browserLang, rate));
+  });
+}
+
 export function stopSpeaking() {
+  token++;
   try {
+    current?.pause();
+    current = null;
     window.speechSynthesis?.cancel();
   } catch {
     /* */

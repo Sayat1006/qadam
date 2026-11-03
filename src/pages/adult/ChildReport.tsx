@@ -1,3 +1,4 @@
+import { kkDate } from '../../components/kit';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { A11yForm } from '../../components/A11y';
@@ -335,7 +336,7 @@ function Notes({ childId, viewer, notes }: { childId: string; viewer: Adult; not
         return (
           <div key={n.id} className="card">
             <p className="small muted" style={{ margin: 0 }}>
-              {a ? a.name : 'Жойылған пайдаланушы'} · {new Date(n.t).toLocaleString('kk-KZ')}
+              {a ? a.name : 'Жойылған пайдаланушы'} · {kkDate(new Date(n.t), false)}
             </p>
             <p style={{ margin: '6px 0 0', whiteSpace: 'pre-wrap' }}>{n.text}</p>
           </div>

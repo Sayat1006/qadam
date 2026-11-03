@@ -12,7 +12,7 @@ export function AdultShell({ role, children }: { role: Role; children: (adult: A
   const navigate = useNavigate();
   const [a11y, setA11y] = useAdultA11y();
   const adult = session?.kind === 'adult' ? db.adults.find((a) => a.id === session.id) : undefined;
-  if (!adult) return <Navigate to="/" replace />;
+  if (!adult) return <Navigate to="/login" replace />;
   if (adult.role !== role) return <Navigate to={'/' + adult.role} replace />;
   const exit = () => {
     logout();

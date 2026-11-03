@@ -1,3 +1,4 @@
+import { useTitle } from '../components/kit';
 import { useState, type FormEvent, type ReactNode } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { A11yButton, useAdultA11y } from '../components/A11y';
@@ -25,7 +26,8 @@ function PublicFrame({ children }: { children: ReactNode }) {
   );
 }
 
-export function Landing() {
+export function LoginPage() {
+  useTitle('Кіру');
   const { session } = useStore();
   if (session?.kind === 'child') return <Navigate to="/child" replace />;
   if (session?.kind === 'adult') {
@@ -175,6 +177,7 @@ function SetupAdmin() {
 }
 
 export function ChildLogin() {
+  useTitle('Оқушы кіруі');
   const { db } = useStore();
   const navigate = useNavigate();
   const [childId, setChildId] = useState<string | null>(null);

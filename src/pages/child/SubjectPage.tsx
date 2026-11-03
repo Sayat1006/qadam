@@ -1,9 +1,11 @@
+import { useTitle } from '../../components/kit';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Bota } from '../../components/ui';
 import { getSubject, LEVEL_NAMES } from '../../content';
 import { useChild } from './ChildShell';
 
 export function SubjectPage() {
+  useTitle('Пән');
   const { sid = '' } = useParams();
   const { progress } = useChild();
   const subject = getSubject(sid);

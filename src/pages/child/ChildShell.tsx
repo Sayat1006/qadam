@@ -59,7 +59,7 @@ export function ChildShell() {
     }
   }, [activeSec, child]);
 
-  if (!child || !progress) return <Navigate to="/" replace />;
+  if (!child || !progress) return <Navigate to="/child-login" replace />;
 
   const usedToday = progress.seconds[today()] ?? 0;
   const limitReached = child.settings.dailyLimitMin > 0 && usedToday >= child.settings.dailyLimitMin * 60;
@@ -78,10 +78,12 @@ export function ChildShell() {
   }
 
   const links = [
-    { to: '/child', end: true, icon: '🏠', label: 'Басты' },
+    { to: '/child', end: true, icon: '🏠', label: 'Шолу' },
+    { to: '/child/subjects', icon: '📚', label: 'Пәндер' },
     { to: '/child/games', icon: '🎮', label: 'Ойындар' },
+    { to: '/child/achievements', icon: '🏅', label: 'Жетістік' },
     { to: '/child/village', icon: '⛺', label: 'Ауылым' },
-    { to: '/child/calm', icon: '🌿', label: 'Тыныштық' },
+    { to: '/child/calm', icon: '🌿', label: 'Тыныштық', desktopOnly: true },
   ];
   const a11y = <A11yButton value={child.a11y} onChange={(s) => updateChild(child.id, (c) => (c.a11y = s))} />;
 
@@ -160,7 +162,7 @@ export function ChildShell() {
         </main>
 
         <nav className="bottom-nav" aria-label="Бала мәзірі">
-          {links.map((l) => (
+          {links.filter((l) => !l.desktopOnly).map((l) => (
             <NavLink key={l.to} to={l.to} end={l.end}>
               <span className="ni" aria-hidden="true">
                 {l.icon}

@@ -1,3 +1,4 @@
+import { useTitle } from '../../components/kit';
 import { Bota } from '../../components/ui';
 import { updateProgress } from '../../lib/db';
 import { playCue } from '../../lib/media';
@@ -19,6 +20,7 @@ export const VILLAGE_ITEMS = [
 ];
 
 export function Village() {
+  useTitle('Менің ауылым');
   const { child, progress } = useChild();
   const left = progress.stars - progress.spentStars;
 

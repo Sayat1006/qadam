@@ -1,9 +1,11 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AdminPage } from './pages/adult/Admin';
 import { ParentPage, TeacherPage } from './pages/adult/Dashboards';
-import { ChildLogin, Landing } from './pages/Auth';
+import { ChildLogin, LoginPage } from './pages/Auth';
+import { Landing } from './pages/Landing';
+import { Achievements } from './pages/child/Achievements';
 import { Calm } from './pages/child/Calm';
-import { ChildHome } from './pages/child/ChildHome';
+import { ChildHome, SubjectsPage } from './pages/child/ChildHome';
 import { ChildShell } from './pages/child/ChildShell';
 import { GamePage, GamesList } from './pages/child/Games';
 import { Lesson } from './pages/child/Lesson';
@@ -15,9 +17,12 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/child-login" element={<ChildLogin />} />
         <Route path="/child" element={<ChildShell />}>
           <Route index element={<ChildHome />} />
+          <Route path="subjects" element={<SubjectsPage />} />
+          <Route path="achievements" element={<Achievements />} />
           <Route path="subject/:sid" element={<SubjectPage />} />
           <Route path="lesson/:sid" element={<Lesson />} />
           <Route path="games" element={<GamesList />} />

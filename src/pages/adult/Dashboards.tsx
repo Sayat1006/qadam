@@ -1,3 +1,4 @@
+import { useTitle } from '../../components/kit';
 import { useState } from 'react';
 import { Bota } from '../../components/ui';
 import { LEVEL_NAMES, subjects } from '../../content';
@@ -21,6 +22,7 @@ function ChildPicker({ list, value, onChange }: { list: Child[]; value: string |
 }
 
 function ParentView({ adult }: { adult: Adult }) {
+  useTitle('Ата-ана панелі');
   useStore();
   const list = childrenFor(adult);
   const [sel, setSel] = useState<string | null>(list[0]?.id ?? null);
@@ -45,6 +47,7 @@ export function ParentPage() {
 }
 
 function TeacherView({ adult }: { adult: Adult }) {
+  useTitle('Мұғалім кабинеті');
   const { db } = useStore();
   const list = childrenFor(adult);
   const [sel, setSel] = useState<string | null>(null);

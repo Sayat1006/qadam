@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { TaskView, type TaskResult } from '../../components/TaskView';
-import { Bota, Hero } from '../../components/ui';
+import { Confetti, ProgressRing, useTitle } from '../../components/kit';
+import { Bar, Bota, Hero, Modal } from '../../components/ui';
+import { levelProgress } from '../../lib/achievements';
 import { getSubject, LEVEL_NAMES } from '../../content';
 import { buildLesson, decideLevel } from '../../lib/adaptive';
 import { getDB, updateProgress } from '../../lib/db';
@@ -31,6 +33,9 @@ export function Lesson() {
   const [clean, setClean] = useState(0);
   const [levelUp, setLevelUp] = useState<number | null>(null);
   const [finished, setFinished] = useState(false);
+  const [results, setResults] = useState<{ topic: string; firstTry: boolean; hints: number; ms: number; review: boolean }[]>([]);
+  const [confirmExit, setConfirmExit] = useState(false);
+  useTitle(subject ? `${subject.title} · сабақ` : 'Сабақ');
 
   if (!subject) return <Navigate to="/child" replace />;
 
@@ -38,6 +43,8 @@ export function Lesson() {
     const item = items[idx];
     const stars = r.firstTry ? 2 : 1;
     const isLast = idx + 1 >= items.length;
+    const nextResults = [...results, { topic: item.task.topic, firstTry: r.firstTry, hints: r.hints, ms: r.ms, review: item.review }];
+    const perfect = isLast && nextResults.every((x) => x.firstTry);
     let up: number | null = null;
     updateProgress(child.id, (p) => {
       p.attempts.push({
@@ -53,6 +60,8 @@ export function Lesson() {
       p.stars += stars + (isLast ? LESSON_BONUS : 0);
       if (isLast) {
         p.lessonsDone[sid] = (p.lessonsDone[sid] ?? 0) + 1;
+        if (perfect) p.perfectLessons = (p.perfectLessons ?? 0) + 1;
+        p.lastLesson = { subject: sid, level, t: Date.now(), score: nextResults.filter((x) => x.firstTry).length, total: nextResults.length };
         const cur = p.levels[sid] ?? 1;
         if (level === cur && decideLevel(p.attempts, sid, cur, subject!.levels.length) === 'up') {
           p.levels[sid] = cur + 1;
@@ -61,6 +70,7 @@ export function Lesson() {
         }
       }
     });
+    setResults(nextResults);
     setEarned((e) => e + stars + (isLast ? LESSON_BONUS : 0));
     if (r.firstTry) setClean((c) => c + 1);
     if (isLast) {
@@ -77,40 +87,118 @@ export function Lesson() {
     setClean(0);
     setLevelUp(null);
     setFinished(false);
+    setResults([]);
   }
 
   if (finished) {
     const ln = levelUp ? LEVEL_NAMES[levelUp] : null;
+    const total = results.length;
+    const pct = total ? Math.round((100 * clean) / total) : 0;
+    const withHelp = results.filter((x) => !x.firstTry).length;
+    const timeSec = Math.round(results.reduce((a, x) => a + x.ms, 0) / 1000);
+    const byTopic = new Map<string, { ok: number; n: number }>();
+    results.forEach((x) => {
+      const v = byTopic.get(x.topic) ?? { ok: 0, n: 0 };
+      v.n++;
+      if (x.firstTry) v.ok++;
+      byTopic.set(x.topic, v);
+    });
+    const titleOf = (t: string) => subject.levels.flatMap((l) => l.topics).find((x) => x.id === t)?.title ?? t;
+    const weakTopics = [...new Set([...byTopic.entries()].filter(([, v]) => v.ok < v.n).map(([t]) => titleOf(t)))];
+    const lp = levelProgress(progress, sid);
+    const perfect = total > 0 && clean === total;
     return (
-      <Hero glow="center" className="center" as="div">
-        <div className="stack" style={{ maxWidth: 640, margin: '0 auto' }}>
-        <div style={{ fontSize: '4rem' }} aria-hidden="true">
-          {levelUp ? ln!.icon : '🏆'}
+      <div className="stack" style={{ maxWidth: 960, margin: '0 auto' }}>
+        <Confetti run={!!levelUp || perfect} />
+        <Hero glow="center" as="div" className="result-hero">
+          <div className="result-grid">
+            <ProgressRing value={clean} max={total} size={156} stroke={14} label={`Нәтиже: ${total} тапсырманың ${clean} тапсырмасы бірден дұрыс, ${pct}%`}>
+              <strong className="ring-num">{pct}%</strong>
+              <span className="ring-sub">бірден дұрыс</span>
+            </ProgressRing>
+            <div style={{ minWidth: 0 }}>
+              <p className="eyebrow">
+                {subject.title} · {level}-деңгей
+              </p>
+              <h1 style={{ margin: '0 0 12px' }}>
+                {levelUp ? `Жаңа деңгей: ${levelUp} · ${ln!.name} ${ln!.icon}` : perfect ? 'Қатесіз сабақ! 🌟' : 'Сабақ аяқталды!'}
+              </h1>
+              <Bota
+                text={
+                  levelUp
+                    ? `${child.name}, сен «${subject.title}» пәнінде келесі деңгейге көтерілдің! Бұл — сенің еңбегің.`
+                    : perfect
+                      ? `Керемет, ${child.name}! Барлық тапсырманы бірінші әрекеттен таптың.`
+                      : `Жарайсың, ${child.name}! Барлық тапсырманы соңына дейін орындадың — бұл табандылық.`
+                }
+              />
+            </div>
+          </div>
+        </Hero>
+
+        <div className="grid cols-4">
+          <div className="card stat">
+            <span className="v" style={{ color: 'var(--ok)' }}>
+              {clean}
+            </span>
+            <span className="l">Бірден дұрыс</span>
+          </div>
+          <div className="card stat">
+            <span className="v" style={{ color: 'var(--accent)' }}>
+              {withHelp}
+            </span>
+            <span className="l">Кеңеспен немесе қайта әрекетпен</span>
+          </div>
+          <div className="card stat">
+            <span className="v">{timeSec >= 60 ? `${Math.floor(timeSec / 60)} мин ${timeSec % 60} с` : `${timeSec} с`}</span>
+            <span className="l">Жұмсалған уақыт</span>
+          </div>
+          <div className="card stat">
+            <span className="v">⭐ +{earned}</span>
+            <span className="l">Жиналған жұлдыз</span>
+          </div>
         </div>
-        <h1>{levelUp ? `Жаңа деңгей: ${levelUp} · ${ln!.name}!` : 'Сабақ аяқталды!'}</h1>
-        <Bota
-          text={
-            levelUp
-              ? `${child.name}, сен «${subject.title}» пәнінде келесі деңгейге көтерілдің! Бұл — сенің еңбегің.`
-              : `Жарайсың, ${child.name}! ${items.length} тапсырманың ішінде ${clean} тапсырманы бірден таптың. Сен ${earned} жұлдыз жинадың!`
-          }
-        />
-        <p className="stars-pill" style={{ fontSize: '1.4rem', height: 52, padding: '0 22px', margin: '0 auto' }} aria-label={`${earned} жұлдыз`}>
-          ⭐ +{earned}
-        </p>
-        <div className="row" style={{ justifyContent: 'center' }}>
-          <button className="btn big" onClick={again}>
-            Тағы бір сабақ
-          </button>
-          <Link className="btn big secondary" to="/child/games">
-            <span aria-hidden="true">🎮</span> Ойын
-          </Link>
-          <Link className="btn big secondary" to="/child/village">
-            <span aria-hidden="true">⛺</span> Ауылыма
-          </Link>
+
+        <div className="grid cols-2" style={{ alignItems: 'stretch' }}>
+          <div className="card">
+            <p className="eyebrow">Тақырыптар</p>
+            <h3>Қалай орындадың</h3>
+            <ul className="level-list">
+              {[...byTopic.entries()].map(([t, v]) => (
+                <li key={t}>
+                  <div className="row spread small" style={{ marginBottom: 6 }}>
+                    <strong>{titleOf(t)}</strong>
+                    <span className="muted">
+                      {v.ok} / {v.n} бірден
+                    </span>
+                  </div>
+                  <Bar value={(100 * v.ok) / v.n} label={`${titleOf(t)}: ${v.ok} / ${v.n}`} />
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="card">
+            <p className="eyebrow">Келесі қадам</p>
+            <h3>Не істейміз?</h3>
+            <ul className="check-list">
+              {weakTopics.length > 0 ? <li>Тағы жаттығу керек: {weakTopics.join(', ')}</li> : <li>Барлық тақырып жақсы орындалды</li>}
+              {lp.level < 5 ? <li>Келесі деңгейге дейін: {lp.value}%</li> : <li>Сен бұл пәннің ең жоғары деңгейіндесің</li>}
+              <li>Демалғың келсе — ойын ойна немесе ауылыңды безендір</li>
+            </ul>
+            <div className="row" style={{ marginTop: 8 }}>
+              <button className="btn big" onClick={again}>
+                Тағы бір сабақ
+              </button>
+              <Link className="btn big secondary" to="/child/games">
+                🎮 Ойын
+              </Link>
+              <Link className="btn big secondary" to="/child">
+                Шолуға
+              </Link>
+            </div>
+          </div>
         </div>
-        </div>
-      </Hero>
+      </div>
     );
   }
 
@@ -119,7 +207,7 @@ export function Lesson() {
   return (
     <div style={{ maxWidth: 820, margin: '0 auto' }}>
       <div className="lesson-top">
-        <button className="btn secondary" onClick={() => navigate(`/child/subject/${sid}`)} aria-label="Сабақтан шығу">
+        <button className="btn secondary icon" onClick={() => (idx > 0 ? setConfirmExit(true) : navigate(`/child/subject/${sid}`))} aria-label="Сабақтан шығу">
           ✕
         </button>
         <div className="progress" role="progressbar" aria-label="Сабақ барысы" aria-valuemin={0} aria-valuemax={items.length} aria-valuenow={idx}>
@@ -132,7 +220,22 @@ export function Lesson() {
       <p className="muted small" style={{ fontWeight: 700 }}>
         {subject.emoji} {subject.title} · {item.level}-деңгей {item.review && '· 🔁 Қайталау'}
       </p>
-      <TaskView key={`${round}-${idx}`} task={item.task} sound={child.a11y.sound} autoRead={child.a11y.autoRead} onDone={onDone} />
+      <div className="task-swap" key={`${round}-${idx}`}>
+        <TaskView task={item.task} sound={child.a11y.sound} autoRead={child.a11y.autoRead} onDone={onDone} />
+      </div>
+      {confirmExit && (
+        <Modal title="Сабақтан шығасың ба?" onClose={() => setConfirmExit(false)}>
+          <p>Орындалған {idx} тапсырма сақталды. Сабақты кейін жаңадан бастауға болады.</p>
+          <div className="row">
+            <button className="btn" onClick={() => setConfirmExit(false)}>
+              Жалғастыру
+            </button>
+            <button className="btn secondary" onClick={() => navigate(`/child/subject/${sid}`)}>
+              Шығу
+            </button>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 }

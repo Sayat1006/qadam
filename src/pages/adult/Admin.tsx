@@ -1,3 +1,4 @@
+import { useTitle } from '../../components/kit';
 import { useState, type FormEvent } from 'react';
 import { Modal, Seg } from '../../components/ui';
 import { LEVEL_NAMES, subjectIds } from '../../content';
@@ -14,6 +15,7 @@ export function AdminPage() {
 }
 
 function AdminView({ me }: { me: Adult }) {
+  useTitle('Әкімші панелі');
   const [tab, setTab] = useState<'adults' | 'children' | 'reports' | 'backup'>('children');
   return (
     <div className="stack">

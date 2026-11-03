@@ -1,3 +1,4 @@
+import { useTitle } from '../../components/kit';
 import { Link, Navigate, useParams } from 'react-router-dom';
 import { Bota } from '../../components/ui';
 import { games } from '../../games';
@@ -5,13 +6,14 @@ import { today, updateProgress } from '../../lib/db';
 import { useChild } from './ChildShell';
 
 export function GamesList() {
+  useTitle('Ойындар');
   return (
     <div className="stack">
       <h1>Ойындар залы</h1>
       <Bota text="Ойнай жүріп үйренеміз! Мұнда ұтылу жоқ — тек жаңа әрекет бар." />
       <div className="grid cols-2">
         {games.map((g) => (
-          <Link key={g.id} to={`/child/games/${g.id}`} className="card subject-card">
+          <Link key={g.id} to={`/child/games/${g.id}`} className="card subject-card lift">
             <span className="emoji" aria-hidden="true">
               {g.emoji}
             </span>

@@ -1,3 +1,4 @@
+import { useTitle } from '../../components/kit';
 import { useEffect, useState } from 'react';
 import { Bota } from '../../components/ui';
 import { speak } from '../../lib/media';
@@ -6,6 +7,7 @@ import { useChild } from './ChildShell';
 const PHASE_MS = 4000;
 
 export function Calm() {
+  useTitle('Тыныштық бұрышы');
   const { child } = useChild();
   const [running, setRunning] = useState(false);
   const [phase, setPhase] = useState(0); // жұп — дем алу, тақ — дем шығару

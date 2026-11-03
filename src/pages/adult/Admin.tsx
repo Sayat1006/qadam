@@ -79,7 +79,7 @@ function Adults({ me }: { me: Adult }) {
           onChange={setRole}
           options={[
             { v: 'parent', l: 'Ата-ана' },
-            { v: 'teacher', l: 'Мұғалім / маман' },
+            { v: 'teacher', l: 'Мұғалім' },
             { v: 'admin', l: 'Әкімші' },
           ]}
         />
@@ -307,7 +307,7 @@ function Children() {
           </p>
         </div>
         <PeoplePicker list={parents} value={parentIds} onChange={setParentIds} label="Ата-анасы" />
-        <PeoplePicker list={teachers} value={teacherIds} onChange={setTeacherIds} label="Мұғалімі / маманы" />
+        <PeoplePicker list={teachers} value={teacherIds} onChange={setTeacherIds} label="Мұғалімі" />
         {msg && (
           <p className={msg.ok ? 'notice' : 'error'} role="status">
             {msg.t}
@@ -371,7 +371,7 @@ function EditChild({ child, parents, teachers, onClose }: { child: Child; parent
           <input value={name} onChange={(e) => setName(e.target.value)} />
         </label>
         <PeoplePicker list={parents} value={parentIds} onChange={setParentIds} label="Ата-анасы" />
-        <PeoplePicker list={teachers} value={teacherIds} onChange={setTeacherIds} label="Мұғалімі / маманы" />
+        <PeoplePicker list={teachers} value={teacherIds} onChange={setTeacherIds} label="Мұғалімі" />
         <div>
           <p style={{ fontWeight: 800, marginBottom: 6 }}>Жаңа сурет-құпиясөз (өзгертпесеңіз, бос қалдырыңыз)</p>
           <PicPassPicker value={picPass} onChange={setPicPass} />

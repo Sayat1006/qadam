@@ -5,7 +5,7 @@ import { Brand } from '../../components/ui';
 import { logout, useStore } from '../../lib/db';
 import type { Adult, Role } from '../../lib/types';
 
-export const ROLE_NAMES: Record<Role, string> = { admin: 'Әкімші', parent: 'Ата-ана', teacher: 'Мұғалім / маман' };
+export const ROLE_NAMES: Record<Role, string> = { admin: 'Әкімші', parent: 'Ата-ана', teacher: 'Мұғалім' };
 
 export function AdultShell({ role, children }: { role: Role; children: (adult: Adult) => ReactNode }) {
   const { db, session } = useStore();

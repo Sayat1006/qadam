@@ -37,15 +37,15 @@ export function Landing() {
             <h1>Әр балаға — өз қадамы</h1>
             <div className="ornament decor" aria-hidden="true" />
             <p style={{ fontSize: '1.15rem' }}>
-              <strong>Qadam</strong> — 6–15 жастағы балаларға, соның ішінде ерекше білім беру қажеттілігі бар балаларға арналған білім беру платформасы. Тапсырмалар баланың жасына емес,
-              өз деңгейіне қарай бейімделеді.
+              <strong>Qadam</strong> — 6–15 жастағы балаларға арналған білім беру платформасы. Әр бала өз қарқынымен оқиды: тапсырмалар баланың өз деңгейіне қарай
+              бейімделеді, ал ойындар оқуды қызықты етеді.
             </p>
             <div className="chips">
               <span className="chip">🌱→🦅 5 деңгей</span>
               <span className="chip">💡 3 сатылы кеңес</span>
               <span className="chip">🎮 Білім беретін ойындар</span>
               <span className="chip">👨‍👩‍👧 Ата-ана мен мұғалім панелі</span>
-              <span className="chip">♿ Қолжетімділік</span>
+              <span className="chip">🔊 Дауыстап оқу</span>
             </div>
           </div>
           <div>{setup ? <SetupAdmin /> : <AdultLogin />}</div>

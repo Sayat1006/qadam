@@ -50,7 +50,7 @@ export function ChildReport({ child, viewer }: { child: Child; viewer: Adult }) 
     if (weekAcc !== null) summaryLines.push(`Тапсырмалардың ${weekAcc}%-ын бірінші әрекеттен дұрыс орындады.`);
     if (strongAll.length) summaryLines.push(`Жақсы меңгерген тақырыптары: ${strongAll.slice(0, 4).join(', ')}.`);
     if (weakAll.length) summaryLines.push(`Көбірек жаттығуды қажет ететін тақырыптар: ${weakAll.slice(0, 4).map((w) => w.t).join(', ')}.`);
-    if (support.length) summaryLines.push(`⚠️ ${support.map((s) => getSubject(s.subject)!.title).join(', ')} пәнінде соңғы тапсырмалар қиын болып жатыр — маманмен ақылдасып, деңгейді уақытша төмендетуді қарастырыңыз.`);
+    if (support.length) summaryLines.push(`⚠️ ${support.map((s) => getSubject(s.subject)!.title).join(', ')} пәнінде соңғы тапсырмалар қиындау болып жатыр. Бұл қалыпты жағдай: мұғаліммен ақылдасып, деңгейді уақытша төмендетуге болады.`);
   }
 
   function openAsChild() {
@@ -214,7 +214,7 @@ export function ChildReport({ child, viewer }: { child: Child; viewer: Adult }) 
                     ))}
                   </div>
                 )}
-                {s.needsSupport && <p className="notice small">Қолдау қажет: соңғы тапсырмалар қиын болып жатыр.</p>}
+                {s.needsSupport && <p className="notice small">Көмек керек: соңғы тапсырмалар қиындау болып жатыр.</p>}
                 {viewer.role !== 'parent' && (
                   <div>
                     <p className="small" style={{ fontWeight: 800, margin: '4px 0' }}>
@@ -290,7 +290,7 @@ export function ChildReport({ child, viewer }: { child: Child; viewer: Adult }) 
             )}
           </div>
           <div className="card">
-            <h3>Баланың қолжетімділік баптаулары</h3>
+            <h3>Көрініс пен дыбыс (бала режимі)</h3>
             <A11yForm value={child.a11y} onChange={(s) => updateChild(child.id, (c) => (c.a11y = s))} />
           </div>
         </div>

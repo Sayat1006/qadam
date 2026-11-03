@@ -94,13 +94,13 @@ export function A11yButton({ value, onChange }: { value: A11ySettings; onChange:
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button type="button" className="btn secondary icon" onClick={() => setOpen(true)} aria-label="Қолжетімділік баптаулары" title="Қолжетімділік">
+      <button type="button" className="btn secondary icon" onClick={() => setOpen(true)} aria-label="Көрініс пен дыбыс баптаулары" title="Баптаулар">
         <span aria-hidden="true" style={{ fontSize: '1.3rem' }}>
-          ♿
+          ⚙️
         </span>
       </button>
       {open && (
-        <Modal title="Қолжетімділік" onClose={() => setOpen(false)}>
+        <Modal title="Көрініс пен дыбыс" onClose={() => setOpen(false)}>
           <A11yForm value={value} onChange={onChange} />
           <div className="row" style={{ marginTop: 18 }}>
             <button className="btn" onClick={() => setOpen(false)}>

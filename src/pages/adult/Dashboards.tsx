@@ -68,7 +68,7 @@ function TeacherView({ adult }: { adult: Adult }) {
         <Bota text="Сізге әлі оқушы бекітілмеген. Әкімші оқушыларды сізге байланыстырады." />
       ) : (
         <>
-          <p className="muted">Кестеде әр пән бойынша деңгей мен соңғы 20 тапсырманың дәлдігі көрсетілген. Түсі ашық қызғылт ұяшық — қолдау қажет дегенді білдіреді.</p>
+          <p className="muted">Кестеде әр пән бойынша деңгей мен соңғы 20 тапсырманың дәлдігі көрсетілген. Сары ұяшық — көбірек жаттығу керек тақырып бар, қызғылт ұяшық — көмек керек.</p>
           <div className="card table-wrap">
             <table className="list">
               <caption className="sr-only">Оқушылардың пәндер бойынша жетістігі</caption>
@@ -99,7 +99,7 @@ function TeacherView({ adult }: { adult: Adult }) {
                         return (
                           <td key={s.id} style={sum.needsSupport ? { background: 'var(--warn-soft)' } : sum.weak.length ? { background: 'var(--accent-soft)' } : undefined}>
                             {LEVEL_NAMES[sum.level].icon} {sum.level} · {sum.recentAccuracy === null ? '—' : sum.recentAccuracy + '%'}
-                            {sum.needsSupport && <span className="sr-only"> (қолдау қажет)</span>}
+                            {sum.needsSupport && <span className="sr-only"> (көмек керек)</span>}
                           </td>
                         );
                       })}

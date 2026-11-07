@@ -105,7 +105,7 @@ export function useStore() {
 }
 
 // Басқа қойындыда өзгерсе — жаңарту
-window.addEventListener('storage', (e) => {
+if (typeof window !== 'undefined') window.addEventListener('storage', (e) => {
   if (e.key === KEY) {
     db = load();
     emit();
@@ -289,12 +289,7 @@ export function importJSON(text: string) {
 
 /* ---------------- Көмекші ---------------- */
 
-export function today(d = new Date()) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
-}
+export { today } from './date';
 
 export function childrenFor(adult: Adult | undefined) {
   if (!adult) return [];

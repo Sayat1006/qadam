@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "check": "esbuild scripts/check-content.ts --bundle --platform=node --outfile=node_modules/.cache/check.cjs --log-level=warning && node node_modules/.cache/check.cjs"
+    "check": "esbuild scripts/check-content.ts --bundle --platform=node --outfile=node_modules/.cache/check.cjs --log-level=warning && node node_modules/.cache/check.cjs",
+    "test": "vitest run",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "onnxruntime-web": "1.18.0",
@@ -17,11 +19,14 @@
     "three": "0.170.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.10.2",
+    "@playwright/test": "1.63.0",
     "@types/react": "19.1.8",
     "@types/react-dom": "19.1.6",
     "@types/three": "0.170.0",
     "@vitejs/plugin-react": "4.5.2",
     "typescript": "5.8.3",
-    "vite": "6.3.5"
+    "vite": "6.3.5",
+    "vitest": "3.2.4"
   }
 }

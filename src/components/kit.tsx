@@ -143,7 +143,11 @@ export function CountUp({ value, suffix = '' }: { value: number; suffix?: string
     };
   }, [value]);
   return (
-    <span ref={ref} aria-label={`${value}${suffix}`}>
+    <span ref={ref}>
+      <span className="sr-only">
+        {value}
+        {suffix}
+      </span>
       <span aria-hidden="true">
         {n}
         {suffix}

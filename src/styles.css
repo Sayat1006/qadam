@@ -21,11 +21,11 @@
   --primary-ink: #ffffff;
   --primary-soft: #eceaff;
   --accent-ink: #5145d8;
-  --accent: #c27a12;
+  --accent: #8f5300;
   --accent-soft: #fff3da;
   --sky: #4388ff;
   --sky-soft: #e6f0ff;
-  --ok: #1a8f5f;
+  --ok: #12744b;
   --ok-soft: #e3f8ef;
   --warn: #c8551f;
   --warn-soft: #ffede3;
@@ -120,11 +120,11 @@
   --primary-ink: #ffffff;
   --primary-soft: #eceaff;
   --accent-ink: #5145d8;
-  --accent: #c27a12;
+  --accent: #8f5300;
   --accent-soft: #fff3da;
   --sky: #4388ff;
   --sky-soft: #e6f0ff;
-  --ok: #1a8f5f;
+  --ok: #12744b;
   --ok-soft: #e3f8ef;
   --warn: #c8551f;
   --warn-soft: #ffede3;
@@ -1020,7 +1020,7 @@ fieldset {
   border-color: var(--primary);
   color: var(--primary-ink);
 }
-.path-step.locked {
+.path-step.locked .node {
   opacity: 0.55;
 }
 
@@ -2327,7 +2327,7 @@ table.list thead th {
 .css3d-chip.c4 {
   right: 6%;
   top: 8%;
-  color: var(--violet);
+  color: var(--accent-ink);
   font-size: 0.8rem;
   animation-delay: -3s;
 }
@@ -3178,4 +3178,10 @@ table.list thead th {
   .village-stars {
     display: none !important;
   }
+}
+.v-item:focus {
+  outline: none;
+}
+.v-item:focus-visible > * {
+  filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 8px var(--focus));
 }

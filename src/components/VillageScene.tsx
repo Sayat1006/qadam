@@ -90,6 +90,10 @@ export const SLOTS: Record<string, [number, number][]> = {
 };
 
 const HORIZON = 262;
+const ITEM_NAMES: Record<string, string> = {
+  flower: 'Гүл', tree: 'Ағаш', sheep: 'Қой', yurt: 'Киіз үй', well: 'Құдық', horse: 'Жылқы',
+  camel: 'Түйе', apple: 'Алма ағашы', house: 'Үй', school: 'Мектеп',
+};
 const TUFTS: [number, number][] = Array.from({ length: 34 }, (_, i) => [((i * 263) % 980) + 10, 300 + ((i * 97) % 250)]);
 const depth = (y: number) => 0.42 + ((y - HORIZON) / (560 - HORIZON)) * 0.8;
 
@@ -290,6 +294,11 @@ export function VillageScene({ village, fresh, onTap }: { village: string[]; fre
     return () => window.clearInterval(id);
   }, []);
   const night = phase === 'night';
+  function activate(p: Placed) {
+    setJump(p.key);
+    window.setTimeout(() => setJump(null), 600);
+    onTap?.(p);
+  }
   const placed = useMemo(() => placeItems(village), [village]);
   const ground = placed.filter((p) => p.type !== 'rainbow' && p.type !== 'eagle').sort((a, b) => a.y - b.y);
   const eagles = placed.filter((p) => p.type === 'eagle');
@@ -303,7 +312,7 @@ export function VillageScene({ village, fresh, onTap }: { village: string[]; fre
   );
 
   return (
-    <svg className={`vscene ${phase}`} viewBox="0 0 1000 560" role="img" aria-label={`Ауыл көрінісі: ${placed.length} нысан`}>
+    <svg className={`vscene ${phase}`} viewBox="0 0 1000 560" role="group" aria-label={`Ауыл көрінісі: ${placed.length} нысан. Нысанды таңдап, Enter басыңыз.`}>
       <defs>
         <linearGradient id="vSky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={s1} />
@@ -392,10 +401,15 @@ export function VillageScene({ village, fresh, onTap }: { village: string[]; fre
             key={p.key}
             transform={`translate(${p.x} ${p.y}) scale(${sc})`}
             className={`v-item ${fresh === p.key ? 'v-new' : ''} ${jump === p.key ? 'v-jump' : ''}`}
-            onClick={() => {
-              setJump(p.key);
-              window.setTimeout(() => setJump(null), 600);
-              onTap?.(p);
+            role="button"
+            tabIndex={0}
+            aria-label={ITEM_NAMES[p.type] ?? p.type}
+            onClick={() => activate(p)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                activate(p);
+              }
             }}
           >
             {renderItem(p.type, p.i, night)}

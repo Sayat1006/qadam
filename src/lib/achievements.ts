@@ -1,6 +1,6 @@
 /* Жетістіктер мен серия — тек нақты сақталған деректерден есептеледі */
 import { subjects } from '../content';
-import { today } from './db';
+import { today } from './date';
 import type { Progress } from './types';
 
 export interface Badge {

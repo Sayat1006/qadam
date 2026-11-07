@@ -5,7 +5,7 @@ import { CountUp, Reveal, useTitle } from '../components/kit';
 import { Brand } from '../components/ui';
 import { LEVEL_NAMES, subjects } from '../content';
 import { math } from '../content/math';
-import { games } from '../games';
+import { gameMeta as games } from '../games/meta';
 import { getDB, useStore } from '../lib/db';
 
 const Hero3D = lazy(() => import('../three/Hero3D').then((m) => ({ default: m.Hero3D })));

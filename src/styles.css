@@ -3325,3 +3325,132 @@ table.list thead th {
     color: #000;
   }
 }
+
+/* ===== Жаңа ойындар ===== */
+.game-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+}
+.map-city {
+  cursor: pointer;
+}
+.map-city:focus {
+  outline: none;
+}
+.map-city:focus-visible circle:nth-child(2) {
+  stroke: var(--focus);
+  stroke-width: 5;
+}
+.togyz-board {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  border-radius: 24px;
+  background: linear-gradient(160deg, #8a5a33, #6b4325);
+  color: #fff4e3;
+}
+.kazan {
+  text-align: center;
+  font-weight: 700;
+  padding: 8px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.18);
+}
+.pits {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+}
+.pit {
+  min-height: 92px;
+  border-radius: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  background: radial-gradient(circle at 50% 40%, #5a3a1f, #3f2814);
+  color: #fff4e3;
+  font: inherit;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 6px;
+}
+button.pit.active {
+  cursor: pointer;
+  border-color: #ffca70;
+  box-shadow: 0 0 0 3px rgba(255, 202, 112, 0.35);
+}
+button.pit:disabled {
+  opacity: 0.85;
+}
+.pit.last {
+  outline: 3px solid #65d8f2;
+  outline-offset: 2px;
+}
+.pit-dots {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  max-width: 60px;
+}
+.pit-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f4e2c1;
+}
+.pit-n {
+  font-size: 1.1rem;
+}
+.theater {
+  position: relative;
+  overflow: hidden;
+  text-align: center;
+  padding: 26px 70px 22px;
+  border-radius: 24px;
+  background: radial-gradient(ellipse at 50% 30%, #3a2c7a, #1a1440);
+  color: #fff;
+}
+.curtain {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 56px;
+  background: repeating-linear-gradient(90deg, #b3263b 0 10px, #8f1c2f 10px 18px);
+}
+.curtain.l {
+  left: 0;
+}
+.curtain.r {
+  right: 0;
+}
+.stage-actor {
+  font-size: 4rem;
+  animation: bob 3s ease-in-out infinite;
+}
+.stage-story {
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 8px 0 0;
+  max-width: 520px;
+}
+.theater .btn.secondary {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+@media (max-width: 520px) {
+  .theater {
+    padding: 20px 40px;
+  }
+  .curtain {
+    width: 30px;
+  }
+  .pit {
+    min-height: 74px;
+  }
+}

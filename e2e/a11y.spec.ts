@@ -15,6 +15,10 @@ const pages: { path: string; session: 'child' | 'parent' | 'teacher' | 'admin' |
   { path: '/child/placement/math', session: 'child' },
   { path: '/child/games', session: 'child' },
   { path: '/child/games/memory', session: 'child' },
+  { path: '/child/games/asyq', session: 'child' },
+  { path: '/child/games/togyz', session: 'child' },
+  { path: '/child/games/map', session: 'child' },
+  { path: '/child/games/emotions', session: 'child' },
   { path: '/child/achievements', session: 'child' },
   { path: '/child/village', session: 'child' },
   { path: '/child/calm', session: 'child' },
@@ -85,4 +89,27 @@ test('диагностика деңгейді анықтап, сақтайды',
   await expect(page.getByText('деңгей анықталды')).toBeVisible();
   const placement = await page.evaluate(() => JSON.parse(localStorage.getItem('qadam.db.v1')!).progress.c1.placement);
   expect(placement.science.level).toBeGreaterThanOrEqual(1);
+});
+
+test('тоғызқұмалақ: бала жүреді, Бота жауап береді', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile');
+  await seed(page, { session: 'child' });
+  await page.goto('/child/games/togyz');
+  await page.getByRole('button', { name: 'Сенің 3-отауың: 5 құмалақ' }).click();
+  await expect(page.getByText(/Керемет! 6 құмалақ ұттың/)).toBeVisible();
+  await expect(page.getByText(/Бота .*жүрді|Бота .* ұтып алды/)).toBeVisible({ timeout: 4000 });
+});
+
+test('карта: дұрыс қаланы басу', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile');
+  await seed(page, { session: 'child' });
+  await page.goto('/child/games/map');
+  const name = (await page.locator('h2 .grad-text').textContent())!.trim();
+  // Нүктелер белгісіз, сондықтан әрқайсысын басып көреміз
+  const dots = page.locator('.map-city');
+  for (let i = 0; i < (await dots.count()); i++) {
+    await dots.nth(i).click();
+    if (await page.getByText(`Дұрыс! ${name}`).count()) break;
+  }
+  await expect(page.getByText(`Дұрыс! ${name}`)).toBeVisible();
 });

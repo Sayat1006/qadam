@@ -514,6 +514,204 @@ function durationTask(): Task {
   };
 }
 
+
+/* ---------- 6-деңгей: бөлшек, ондық бөлшек, пайыз, аудан ---------- */
+
+const dec = (n: number) => (Math.round(n * 10) / 10).toFixed(1).replace('.', ',');
+
+function fracSameDen(): Task {
+  const n = pick([5, 6, 7, 8, 9, 10, 12]);
+  const a = rand(1, n - 2);
+  const b = rand(1, n - 1 - a);
+  const plus = rand(0, 1) === 1;
+  const [x, y] = plus ? [a, b] : [a + b, b];
+  const ans = plus ? a + b : a;
+  const right = `${ans}/${n}`;
+  const wrong = new Set([`${ans}/${n * 2}`, `${plus ? ans + 1 : ans - 1 || ans + 2}/${n}`, `${x + y}/${n + n}`]);
+  wrong.delete(right);
+  return {
+    kind: 'choice',
+    topic: 'fracops',
+    prompt: plus ? 'Бөлшектерді қос:' : 'Бөлшектерді азайт:',
+    visual: { type: 'equation', value: `${x}/${n} ${plus ? '+' : '−'} ${y}/${n} = ?` },
+    options: textOptions(right, sample([...wrong], 2)),
+    answer: right,
+    hints: [
+      'Бөлімдері бірдей бөлшектерде тек алымдарын қосамыз немесе азайтамыз.',
+      `Бөлім өзгермейді: ${n}. Алымдар: ${x} ${plus ? '+' : '−'} ${y} = ?`,
+      `Жауабы: ${right}.`,
+    ],
+  };
+}
+
+function decimalAdd(): Task {
+  const a = rand(10, 89) / 10;
+  const b = rand(10, 59) / 10;
+  const plus = rand(0, 1) === 1 || a <= b;
+  const ans = plus ? a + b : a - b;
+  const right = dec(ans);
+  const wrong = [dec(ans + 0.1), dec(ans + 1), dec(Math.max(0.1, ans - 0.1))].filter((w) => w !== right);
+  return {
+    kind: 'choice',
+    topic: 'decimals',
+    prompt: 'Ондық бөлшектермен есепте:',
+    visual: { type: 'equation', value: `${dec(a)} ${plus ? '+' : '−'} ${dec(b)} = ?` },
+    options: textOptions(right, sample([...new Set(wrong)], 2)),
+    answer: right,
+    hints: [
+      'Бүтін бөлігін бөлек, ондық бөлігін бөлек есепте.',
+      'Үтірді үтірдің астына қойып, бағанмен есептеуге болады.',
+      `Жауабы: ${right}.`,
+    ],
+  };
+}
+
+function percentOf(): Task {
+  const pct = pick([10, 20, 25, 50, 75]);
+  const base = pick([40, 60, 80, 100, 120, 200, 240, 400, 600, 800]);
+  const ans = (base * pct) / 100;
+  if (!Number.isInteger(ans)) return percentOf();
+  return {
+    kind: 'numpad',
+    topic: 'percent',
+    prompt: `${base} санының ${pct} пайызын тап.`,
+    visual: { type: 'equation', value: `${base} · ${pct}% = ?` },
+    answer: ans,
+    hints: [
+      '1 пайыз — санның жүзден бір бөлігі.',
+      pct === 50 ? 'Елу пайыз — жартысы.' : pct === 25 ? 'Жиырма бес пайыз — төрттен бірі.' : `${base} : 100 × ${pct} = ?`,
+      `Жауабы: ${ans}.`,
+    ],
+  };
+}
+
+function rectangle(): Task {
+  const a = rand(3, 15);
+  const b = rand(2, 9);
+  const area = rand(0, 1) === 1;
+  return {
+    kind: 'numpad',
+    topic: 'area',
+    prompt: area
+      ? `Тіктөртбұрыштың ұзындығы ${a} см, ені ${b} см. Оның ауданы неше шаршы сантиметр?`
+      : `Тіктөртбұрыштың ұзындығы ${a} см, ені ${b} см. Оның периметрі неше сантиметр?`,
+    answer: area ? a * b : 2 * (a + b),
+    unit: area ? 'см²' : 'см',
+    hints: [
+      area ? 'Аудан = ұзындық × ен.' : 'Периметр — барлық қабырғаның қосындысы: (ұзындық + ен) × 2.',
+      area ? `${a} × ${b} = ?` : `(${a} + ${b}) × 2 = ?`,
+      `Жауабы: ${area ? a * b : 2 * (a + b)}.`,
+    ],
+  };
+}
+
+function orderOps(): Task {
+  const a = rand(2, 20);
+  const b = rand(2, 9);
+  const c = rand(2, 9);
+  const first = rand(0, 1) === 1;
+  const ans = first ? a + b * c : b * c - Math.min(a, b * c - 1);
+  const sub = Math.min(a, b * c - 1);
+  return {
+    kind: 'numpad',
+    topic: 'orderops',
+    prompt: 'Амалдардың ретін сақтап есепте:',
+    visual: { type: 'equation', value: first ? `${a} + ${b} × ${c} = ?` : `${b} × ${c} − ${sub} = ?` },
+    answer: ans,
+    hints: [
+      'Алдымен көбейту мен бөлу, сосын қосу мен азайту орындалады.',
+      `Алдымен: ${b} × ${c} = ${b * c}.`,
+      `Жауабы: ${ans}.`,
+    ],
+  };
+}
+
+/* ---------- 7-деңгей: теңдеу, теріс сан, пропорция ---------- */
+
+function equation(): Task {
+  const mul = rand(0, 1) === 1;
+  const x = rand(2, mul ? 12 : 60);
+  const a = rand(2, mul ? 9 : 40);
+  const b = mul ? a * x : a + x;
+  return {
+    kind: 'numpad',
+    topic: 'equation',
+    prompt: 'Теңдеуді шеш, x неге тең?',
+    visual: { type: 'equation', value: mul ? `${a} · x = ${b}` : `x + ${a} = ${b}` },
+    answer: x,
+    hints: [
+      mul ? 'Белгісіз көбейткішті табу үшін көбейтіндіні белгілі көбейткішке бөлеміз.' : 'Белгісіз қосылғышты табу үшін қосындыдан белгілі қосылғышты азайтамыз.',
+      mul ? `x = ${b} : ${a}` : `x = ${b} − ${a}`,
+      `x = ${x}`,
+    ],
+  };
+}
+
+const neg = (n: number) => (n < 0 ? `−${-n}` : String(n));
+
+function negatives(): Task {
+  const a = -rand(1, 12);
+  const b = rand(1, 15);
+  const ans = a + b;
+  const right = neg(ans);
+  const wrong = [neg(-ans), neg(ans + 1), neg(ans - 2)].filter((w, i, arr) => w !== right && arr.indexOf(w) === i);
+  return {
+    kind: 'choice',
+    topic: 'negatives',
+    prompt: 'Есепте (сан түзуін елестет):',
+    visual: { type: 'equation', value: `${neg(a)} + ${b} = ?` },
+    options: textOptions(right, wrong.slice(0, 2)),
+    answer: right,
+    hints: [
+      'Теріс саннан бастап, сан түзуімен оңға қарай жүр.',
+      `${neg(a)} нүктесінен оңға қарай ${b} қадам жаса.`,
+      `Жауабы: ${right}.`,
+    ],
+  };
+}
+
+function proportion(): Task {
+  const t = pick([
+    { w: 'дәптер', e: '📒' },
+    { w: 'қарындаш', e: '✏️' },
+    { w: 'кітап', e: '📕' },
+  ]);
+  const price = rand(3, 30) * 10;
+  const n1 = rand(2, 5);
+  let n2 = rand(2, 9);
+  while (n2 === n1) n2 = rand(2, 9);
+  return {
+    kind: 'numpad',
+    topic: 'proportion',
+    prompt: `${t.e} ${n1} ${t.w} ${price * n1} теңге тұрады. ${n2} ${t.w} қанша тұрады?`,
+    answer: price * n2,
+    unit: '₸',
+    hints: [
+      'Алдымен біреуінің бағасын тап.',
+      `Біреуі: ${price * n1} : ${n1} = ${price}. Енді ${price} × ${n2} = ?`,
+      `Жауабы: ${price * n2} теңге.`,
+    ],
+  };
+}
+
+function discount(): Task {
+  const price = pick([400, 600, 800, 1000, 1200, 2000, 2400]);
+  const pct = pick([10, 20, 25, 50]);
+  const ans = price - (price * pct) / 100;
+  return {
+    kind: 'numpad',
+    topic: 'discount',
+    prompt: `Ойыншықтың бағасы ${price} теңге. Дүкен ${pct} пайыз жеңілдік жасады. Жаңа баға қанша?`,
+    answer: ans,
+    unit: '₸',
+    hints: [
+      'Алдымен жеңілдіктің мөлшерін тап, сосын бағадан азайт.',
+      `Жеңілдік: ${price} · ${pct}% = ${(price * pct) / 100}.`,
+      `${price} − ${(price * pct) / 100} = ${ans} теңге.`,
+    ],
+  };
+}
+
 export const math: Subject = {
   id: 'math',
   title: 'Математика',
@@ -580,6 +778,29 @@ export const math: Subject = {
         { id: 'change', title: 'Қайтарым', gen: changeTask },
         { id: 'duration', title: 'Уақыт ұзақтығы', gen: durationTask },
         { id: 'coins200', title: 'Ақша санау', gen: () => coinsSum(500) },
+      ],
+    },
+    {
+      level: 6,
+      title: 'Бөлшек, ондық бөлшек, пайыз',
+      goal: 'Бөлімдері бірдей бөлшектер, ондық бөлшек, санның пайызы, аудан мен периметр, амалдар реті',
+      topics: [
+        { id: 'fracops', title: 'Бөлшектермен амалдар', gen: fracSameDen },
+        { id: 'decimals', title: 'Ондық бөлшек', gen: decimalAdd },
+        { id: 'percent', title: 'Пайыз', gen: percentOf },
+        { id: 'area', title: 'Аудан мен периметр', gen: rectangle },
+        { id: 'orderops', title: 'Амалдар реті', gen: orderOps },
+      ],
+    },
+    {
+      level: 7,
+      title: 'Теңдеу және теріс сандар',
+      goal: 'Қарапайым теңдеу, теріс сандар, пропорция, жеңілдікті есептеу',
+      topics: [
+        { id: 'equation', title: 'Теңдеу', gen: equation },
+        { id: 'negatives', title: 'Теріс сандар', gen: negatives },
+        { id: 'proportion', title: 'Пропорция', gen: proportion },
+        { id: 'discount', title: 'Жеңілдік', gen: discount },
       ],
     },
   ],

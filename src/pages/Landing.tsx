@@ -22,7 +22,7 @@ const NAV = [
 const topicCount = new Set(subjects.flatMap((s) => s.levels.flatMap((l) => l.topics.map((t) => `${s.id}:${t.id}`)))).size;
 const STATS = [
   { v: subjects.length, l: 'пән' },
-  { v: subjects.length * 5, l: 'деңгей' },
+  { v: subjects.reduce((a, s) => a + s.levels.length, 0), l: 'деңгей' },
   { v: topicCount, l: 'тақырып' },
   { v: games.length, l: 'білім беретін ойын' },
 ];
@@ -211,7 +211,7 @@ export function Landing() {
                 Өз деңгейіңді анықта.
               </h2>
               <p className="lead muted">
-                Әр пәнде 5 деңгей бар. Жүйе бірінші тапсырмалардан-ақ сенің деңгейіңді байқайды: оңай болса — бірден жоғарылатады, қиын болса —
+                Әр пәнде 5–7 деңгей бар. Жүйе бірінші тапсырмалардан-ақ сенің деңгейіңді байқайды: оңай болса — бірден жоғарылатады, қиын болса —
                 кеңес пен көрнекі тірек қосады.
               </p>
               <ul className="check-list">

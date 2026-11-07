@@ -31,6 +31,19 @@ export function SubjectPage() {
             : `Сен ${current}-деңгейдесің. Келесі деңгейге өту үшін тапсырмаларды қатесіз орында. Соңғы тапсырмалардың ішінде ${recentOk} тапсырманы бірден таптың!`
         }
       />
+      {!progress.placement?.[sid] && (
+        <div className="card row spread">
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <strong>Деңгейіңді анықтайық</strong>
+            <p className="muted small" style={{ margin: 0 }}>
+              5–10 минуттық ойын: тапсырмалар біртіндеп қиындайды, нәтижесінде сабақ өз деңгейіңнен басталады.
+            </p>
+          </div>
+          <Link to={`/child/placement/${sid}`} className="btn">
+            🧭 Анықтау
+          </Link>
+        </div>
+      )}
       <ol className="path" style={{ listStyle: 'none', padding: 0 }}>
         {subject.levels.map((l) => {
           const state = l.level < current ? 'done' : l.level === current ? 'current' : 'locked';

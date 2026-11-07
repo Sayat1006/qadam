@@ -182,7 +182,7 @@ export function Lesson() {
             <h3>Не істейміз?</h3>
             <ul className="check-list">
               {weakTopics.length > 0 ? <li>Тағы жаттығу керек: {weakTopics.join(', ')}</li> : <li>Барлық тақырып жақсы орындалды</li>}
-              {lp.level < 5 ? <li>Келесі деңгейге дейін: {lp.value}%</li> : <li>Сен бұл пәннің ең жоғары деңгейіндесің</li>}
+              {!lp.atMax ? <li>Келесі деңгейге дейін: {lp.value}%</li> : <li>Сен бұл пәннің ең жоғары деңгейіндесің</li>}
               <li>Демалғың келсе — ойын ойна немесе ауылыңды безендір</li>
             </ul>
             <div className="row" style={{ marginTop: 8 }}>
@@ -221,7 +221,7 @@ export function Lesson() {
         {subject.emoji} {subject.title} · {item.level}-деңгей {item.review && '· 🔁 Қайталау'}
       </p>
       <div className="task-swap" key={`${round}-${idx}`}>
-        <TaskView task={item.task} sound={child.a11y.sound} autoRead={child.a11y.autoRead} onDone={onDone} />
+        <TaskView task={item.task} sound={child.a11y.sound} autoRead={child.a11y.autoRead} lang={subject.speechLang} onDone={onDone} />
       </div>
       {confirmExit && (
         <Modal title="Сабақтан шығасың ба?" onClose={() => setConfirmExit(false)}>

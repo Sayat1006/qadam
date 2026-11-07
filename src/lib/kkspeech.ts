@@ -87,6 +87,8 @@ export function normalizeKk(input: string): string {
   s = s.replace(/\b(\d{1,2}):(\d{2})\b/g, (_, h, m) => timeWords(h, m));
   // сан + жалғау: 5-ке, 10-нан
   s = s.replace(/(\d+)-(да|де|та|те|дан|ден|тан|тен|нан|нен|ға|ге|қа|ке)(?![а-яәғқңөұүһі])/gi, (_, n, suf) => attachSuffix(kkNumber(+n), suf));
+  // ондық бөлшек 2,5 → екі бүтін оннан бес; 1,25 → бір бүтін жүзден жиырма бес
+  s = s.replace(/(\d+),(\d{1,2})(?!\d)/g, (_, a, b) => `${kkNumber(+a)} бүтін ${b.length === 1 ? 'оннан' : 'жүзден'} ${kkNumber(+b)}`);
   // бөлшек 3/4 → төрттен үш
   s = s.replace(/\b(\d+)\s*\/\s*(\d+)\b/g, (_, a, b) => `${ablative(kkNumber(+b))} ${kkNumber(+a)}`);
   // ақша, пайыз

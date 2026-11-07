@@ -77,7 +77,7 @@ export function Achievements() {
                       {s?.title}: {h.level}-деңгей · {LEVEL_NAMES[h.level]?.name}
                     </strong>
                     <span className="muted small">
-                      {kkDate(new Date(h.t), false)} · {h.by === 'auto' ? 'өз еңбегіңмен' : 'мұғалім белгіледі'}
+                      {kkDate(new Date(h.t), false)} · {h.by === 'auto' ? 'өз еңбегіңмен' : h.by === 'diagnostic' ? 'диагностика бойынша' : 'мұғалім белгіледі'}
                     </span>
                   </span>
                 </li>

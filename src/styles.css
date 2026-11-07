@@ -1085,6 +1085,7 @@ fieldset {
   word-break: break-word;
 }
 .visual .reading {
+  white-space: pre-line;
   font-size: 1.2rem;
   line-height: 1.8;
   background: var(--surface-2);

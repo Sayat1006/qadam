@@ -20,11 +20,12 @@ interface Props {
   task: Task;
   sound: boolean;
   autoRead: boolean;
+  lang?: string;
   onDone: (r: TaskResult) => void;
 }
 
 /** Ескерту: жаңа тапсырма үшін ата-компонент `key` береді — күй толық жаңарады */
-export function TaskView({ task, sound, autoRead, onDone }: Props) {
+export function TaskView({ task, sound, autoRead, lang, onDone }: Props) {
   const started = useRef(Date.now());
   const [wrong, setWrong] = useState(0);
   const [hintsShown, setHintsShown] = useState(0);
@@ -34,7 +35,7 @@ export function TaskView({ task, sound, autoRead, onDone }: Props) {
   const nextRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    if (autoRead) speak(task.prompt);
+    if (autoRead) speak(task.prompt, lang);
     return () => stopSpeaking();
   }, [task, autoRead]);
 
@@ -78,7 +79,7 @@ export function TaskView({ task, sound, autoRead, onDone }: Props) {
         <span className="text" id="task-prompt">
           {task.prompt}
         </span>
-        <SpeakButton text={task.prompt} label="Тапсырманы тыңдау" />
+        <SpeakButton text={task.prompt} label="Тапсырманы тыңдау" lang={lang} />
       </div>
       <Visual v={task.visual} />
 

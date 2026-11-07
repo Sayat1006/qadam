@@ -1,5 +1,5 @@
 /* Жетістіктер мен серия — тек нақты сақталған деректерден есептеледі */
-import { subjects } from '../content';
+import { getSubject, subjects } from '../content';
 import { today } from './date';
 import type { Progress } from './types';
 
@@ -79,9 +79,10 @@ export function badges(p: Progress): Badge[] {
 /** Ағымдағы деңгейдегі келесі деңгейге дейінгі прогресс (бейімделу ережесімен бірдей) */
 export function levelProgress(p: Progress, subject: string) {
   const level = p.levels[subject] ?? 1;
+  const max = getSubject(subject)?.levels.length ?? 5;
   const at = p.attempts.filter((a) => a.subject === subject && a.level === level);
   const last6 = at.slice(-6).filter((a) => a.firstTry).length;
   const volume = Math.min(1, at.length / 8);
   const quality = Math.min(1, last6 / 5);
-  return { level, value: Math.round(100 * Math.min(volume, quality)), tasks: at.length, last6 };
+  return { level, max, atMax: level >= max, value: Math.round(100 * Math.min(volume, quality)), tasks: at.length, last6 };
 }

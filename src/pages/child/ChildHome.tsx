@@ -82,7 +82,7 @@ export function ChildHome() {
   if (recs.length < 3) {
     subjects
       .map((s) => ({ s, lp: levelProgress(progress, s.id) }))
-      .filter((x) => x.lp.value >= 50 && x.lp.value < 100 && x.lp.level < 5)
+      .filter((x) => x.lp.value >= 50 && x.lp.value < 100 && !x.lp.atMax)
       .forEach((x) => recs.push({ icon: x.s.emoji, title: x.s.title, why: `Келесі деңгейге ${100 - x.lp.value}% қалды`, to: `/child/lesson/${x.s.id}`, level: x.lp.level }));
   }
 
@@ -129,6 +129,26 @@ export function ChildHome() {
                 {m.l}
               </button>
             ))}
+          </div>
+        </Reveal>
+      )}
+
+      {progress.attempts.length === 0 && !progress.placement && (
+        <Reveal className="card row spread">
+          <div style={{ minWidth: 0, flex: 1 }}>
+            <p className="eyebrow">Бастамас бұрын</p>
+            <h2 style={{ margin: 0 }}>🧭 Деңгейіңді анықтайық</h2>
+            <p className="muted" style={{ margin: '4px 0 0' }}>
+              Қысқа ойын-тест: сабақтар саған тым оңай да, тым қиын да болмайды.
+            </p>
+          </div>
+          <div className="row">
+            <Link to="/child/placement/math" className="btn">
+              🔢 Математика
+            </Link>
+            <Link to="/child/placement/kazakh" className="btn secondary">
+              🔤 Қазақ тілі
+            </Link>
           </div>
         </Reveal>
       )}
@@ -231,9 +251,9 @@ export function ChildHome() {
               <div>
                 <div className="row spread small" style={{ marginBottom: 6 }}>
                   <span className="muted">Келесі деңгейге дейін</span>
-                  <strong>{lastLp.level >= 5 ? 'ең жоғары деңгей' : `${lastLp.value}%`}</strong>
+                  <strong>{lastLp.atMax ? 'ең жоғары деңгей' : `${lastLp.value}%`}</strong>
                 </div>
-                <Bar value={lastLp.level >= 5 ? 100 : lastLp.value} label={`${lastSubject.title}: келесі деңгейге ${lastLp.value}%`} />
+                <Bar value={lastLp.atMax ? 100 : lastLp.value} label={`${lastSubject.title}: келесі деңгейге ${lastLp.value}%`} />
               </div>
               <Link to={`/child/lesson/${last.subject}`} className="btn big" style={{ alignSelf: 'flex-start' }}>
                 Жалғастыру <span className="arrow" aria-hidden="true">➜</span>
@@ -305,10 +325,10 @@ export function ChildHome() {
                       <span className="row spread small">
                         <strong>{s.title}</strong>
                         <span className="muted">
-                          {LEVEL_NAMES[lp.level].icon} {lp.level}-деңгей{lp.level >= 5 ? '' : ` · ${lp.value}%`}
+                          {LEVEL_NAMES[lp.level].icon} {lp.level}-деңгей{lp.atMax ? '' : ` · ${lp.value}%`}
                         </span>
                       </span>
-                      <Bar value={lp.level >= 5 ? 100 : lp.value} label={`${s.title}: ${lp.level}-деңгей, келесісіне ${lp.value}%`} />
+                      <Bar value={lp.atMax ? 100 : lp.value} label={`${s.title}: ${lp.level}-деңгей, келесісіне ${lp.value}%`} />
                     </span>
                   </Link>
                 </li>
@@ -403,9 +423,9 @@ export function SubjectsPage() {
                   <span className="level-badge">
                     {LEVEL_NAMES[lp.level].icon} {lp.level}-деңгей · {LEVEL_NAMES[lp.level].name}
                   </span>
-                  {lp.level < 5 && <span className="muted">{lp.value}%</span>}
+                  {!lp.atMax && <span className="muted">{lp.value}%</span>}
                 </span>
-                <Bar value={lp.level >= 5 ? 100 : lp.value} label={`${s.title}: келесі деңгейге ${lp.value}%`} />
+                <Bar value={lp.atMax ? 100 : lp.value} label={`${s.title}: келесі деңгейге ${lp.value}%`} />
                 {child.settings.focusSubject === s.id && <span className="focus-tag">Мұғалім ұсынды</span>}
               </Link>
             </Reveal>

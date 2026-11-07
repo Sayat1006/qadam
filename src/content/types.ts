@@ -52,6 +52,7 @@ export interface Subject {
   color: string;
   about: string;
   homeTip: string; // ата-анаға үйдегі кеңес
+  speechLang?: string; // мазмұн тілі (дауыстау үшін), әдепкі — қазақ тілі
   levels: Level[];
 }
 

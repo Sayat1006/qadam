@@ -109,7 +109,8 @@ export function speak(text: string, lang = 'kk-KZ', rate = 0.85) {
   const latin = isLatin(text) || lang.startsWith('en');
   const clean = latin ? text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/gu, '') : normalizeKk(text);
   if (!clean) return;
-  // Ағылшын мәтіні және ISSAI дауысы таңдалмаса — браузер дауысы
+  // Ағылшын/орыс мәтіні және ISSAI дауысы таңдалмаса — браузер дауысы
+  if (lang.startsWith('ru')) return browserSpeak(text.replace(/\([^)]*\)/g, ''), lang, rate * ratePref);
   if (latin || voicePref === 'browser') return browserSpeak(clean, latin ? 'en-US' : lang, rate * ratePref);
   const my = ++token;
   const v = voicePref;

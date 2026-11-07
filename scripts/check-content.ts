@@ -42,7 +42,7 @@ function check(t: Task, where: string) {
 
 let total = 0;
 for (const s of subjects) {
-  if (s.levels.length !== 5) problems.push(`${s.id}: деңгей саны ${s.levels.length}`);
+  if (s.levels.length < 5) problems.push(`${s.id}: деңгей саны ${s.levels.length}`);
   for (const l of s.levels) {
     for (const tp of l.topics) {
       for (let i = 0; i < RUNS; i++) {

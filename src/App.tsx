@@ -12,6 +12,7 @@ const ChildHome = lazy(() => named(import('./pages/child/ChildHome'), 'ChildHome
 const SubjectsPage = lazy(() => named(import('./pages/child/ChildHome'), 'SubjectsPage'));
 const SubjectPage = lazy(() => named(import('./pages/child/SubjectPage'), 'SubjectPage'));
 const Lesson = lazy(() => named(import('./pages/child/Lesson'), 'Lesson'));
+const Placement = lazy(() => named(import('./pages/child/Placement'), 'Placement'));
 const AdminPage = lazy(() => named(import('./pages/adult/Admin'), 'AdminPage'));
 const ParentPage = lazy(() => named(import('./pages/adult/Dashboards'), 'ParentPage'));
 const TeacherPage = lazy(() => named(import('./pages/adult/Dashboards'), 'TeacherPage'));
@@ -45,6 +46,7 @@ export function App() {
           <Route path="achievements" element={<L><Achievements /></L>} />
           <Route path="subject/:sid" element={<L><SubjectPage /></L>} />
           <Route path="lesson/:sid" element={<L><Lesson /></L>} />
+          <Route path="placement/:sid" element={<L><Placement /></L>} />
           <Route path="games" element={<L><GamesList /></L>} />
           <Route path="games/:gid" element={<L><GamePage /></L>} />
           <Route path="village" element={<L><Village /></L>} />

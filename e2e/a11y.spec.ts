@@ -10,6 +10,9 @@ const pages: { path: string; session: 'child' | 'parent' | 'teacher' | 'admin' |
   { path: '/child/subjects', session: 'child' },
   { path: '/child/subject/math', session: 'child' },
   { path: '/child/lesson/math', session: 'child' },
+  { path: '/child/lesson/digital', session: 'child' },
+  { path: '/child/lesson/reading', session: 'child' },
+  { path: '/child/placement/math', session: 'child' },
   { path: '/child/games', session: 'child' },
   { path: '/child/games/memory', session: 'child' },
   { path: '/child/achievements', session: 'child' },
@@ -64,4 +67,22 @@ test('жаңа белгі ашылғанда хабар шығады, бір р�
   await page.reload();
   await page.waitForTimeout(800);
   await expect(page.getByText('Жаңа белгі ашылды!')).toHaveCount(0);
+});
+
+test('диагностика деңгейді анықтап, сақтайды', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile');
+  await seed(page, { session: 'child' });
+  await page.goto('/child/placement/science');
+  await page.getByRole('button', { name: /Бастау/ }).click();
+  // Бірінші тапсырмада әдейі қателесеміз → 1-деңгейде тоқтайды
+  for (let i = 0; i < 40 && !(await page.getByText('деңгей анықталды').count()); i++) {
+    const next = page.getByRole('button', { name: /Келесі/ });
+    if (await next.count()) { await next.click(); continue; }
+    const opts = page.locator('.task-card .opt:not([disabled]), .task-card .sort-group');
+    const n = await opts.count();
+    if (n) await opts.nth(i % n).click();
+  }
+  await expect(page.getByText('деңгей анықталды')).toBeVisible();
+  const placement = await page.evaluate(() => JSON.parse(localStorage.getItem('qadam.db.v1')!).progress.c1.placement);
+  expect(placement.science.level).toBeGreaterThanOrEqual(1);
 });

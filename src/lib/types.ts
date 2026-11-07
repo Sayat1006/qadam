@@ -77,6 +77,7 @@ export interface Progress {
   lessonsDone: Record<string, number>; // пән → аяқталған сабақ саны
   perfectLessons?: number; // қатесіз аяқталған сабақтар
   seenBadges?: string[]; // хабарланған белгілер
+  placement?: Record<string, { level: number; t: number }>; // бастапқы диагностика нәтижесі
   lastLesson?: { subject: string; level: number; t: number; score: number; total: number };
 }
 

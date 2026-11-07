@@ -199,6 +199,11 @@ export function ChildReport({ child, viewer }: { child: Child; viewer: Adult }) 
                 <p className="small muted" style={{ margin: 0 }}>
                   <strong>Мақсат:</strong> {lvl.goal}
                 </p>
+                {p.placement?.[s.subject] && (
+                  <p className="small" style={{ margin: 0 }}>
+                    🧭 Бастапқы диагностика: {p.placement[s.subject].level}-деңгей · {kkDate(new Date(p.placement[s.subject].t), false)}
+                  </p>
+                )}
                 <div>
                   <div className="row spread small">
                     <span>Соңғы 20 тапсырма дәлдігі</span>

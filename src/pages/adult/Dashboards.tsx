@@ -8,6 +8,7 @@ import type { Adult, Child } from '../../lib/types';
 import { AdultShell } from './AdultShell';
 import { ChildReport } from './ChildReport';
 import { AssignmentsPanel } from './Plans';
+import { ContentCatalog } from './Catalog';
 
 function ChildPicker({ list, value, onChange }: { list: Child[]; value: string | null; onChange: (id: string) => void }) {
   if (list.length <= 1) return null;
@@ -52,6 +53,7 @@ function TeacherView({ adult }: { adult: Adult }) {
   const { db } = useStore();
   const list = childrenFor(adult);
   const [sel, setSel] = useState<string | null>(null);
+  const [catalog, setCatalog] = useState(false);
   const child = list.find((c) => c.id === sel);
   const d = today();
 
@@ -120,6 +122,14 @@ function TeacherView({ adult }: { adult: Adult }) {
             </table>
           </div>
           <AssignmentsPanel teacher={adult} students={list} />
+          <details className="card" onToggle={(e) => setCatalog((e.currentTarget as HTMLDetailsElement).open)}>
+            <summary style={{ fontWeight: 700, cursor: 'pointer' }}>📝 Мазмұнды тексеру (тапсырма мысалдары мен ескертулер)</summary>
+            {catalog && (
+              <div style={{ marginTop: 14 }}>
+                <ContentCatalog viewer={adult} />
+              </div>
+            )}
+          </details>
         </>
       )}
     </div>

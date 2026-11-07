@@ -53,3 +53,17 @@ test.describe('мұғалім мен әкімші', () => {
     expect(n).toBe(3);
   });
 });
+
+test('мазмұн каталогы: мысалды белгілеу', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile');
+  await seed(page, { session: 'admin' });
+  await page.goto('/admin');
+  await page.getByRole('tab', { name: 'Мазмұн' }).click();
+  await page.locator('details summary').first().click();
+  await page.getByRole('button', { name: '🚩 Белгілеу' }).first().click();
+  await page.getByPlaceholder('Не дұрыс емес? Қалай түзету керек?').fill('Суреті сөзге сәйкес емес');
+  await page.getByRole('button', { name: 'Сақтау' }).click();
+  await expect(page.getByText('💬 Суреті сөзге сәйкес емес')).toBeVisible();
+  await page.getByRole('button', { name: '✓ Түзетілді деп белгілеу' }).click();
+  await expect(page.getByRole('heading', { name: 'Белгіленген ескертулер (0)' })).toBeVisible();
+});

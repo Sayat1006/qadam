@@ -8,6 +8,7 @@ import { PICS } from '../Auth';
 import { makePassword, makePicPass, makeUsername, parseBulk } from '../../lib/bulk';
 import { AdultShell, ROLE_NAMES } from './AdultShell';
 import { ChildReport } from './ChildReport';
+import { ContentCatalog } from './Catalog';
 
 const AVATARS = ['🦊', '🐻', '🐰', '🐱', '🐶', '🦁', '🐼', '🐯', '🐨', '🦉', '🐢', '🦄'];
 
@@ -17,7 +18,7 @@ export function AdminPage() {
 
 function AdminView({ me }: { me: Adult }) {
   useTitle('Әкімші панелі');
-  const [tab, setTab] = useState<'adults' | 'children' | 'bulk' | 'reports' | 'backup'>('children');
+  const [tab, setTab] = useState<'adults' | 'children' | 'bulk' | 'reports' | 'content' | 'backup'>('children');
   return (
     <div className="stack">
       <h1>Әкімші панелі</h1>
@@ -31,6 +32,7 @@ function AdminView({ me }: { me: Adult }) {
             ['bulk', 'Топпен тіркеу'],
             ['adults', 'Ата-ана мен мұғалімдер'],
             ['reports', 'Есептер'],
+            ['content', 'Мазмұн'],
             ['backup', 'Сақтық көшірме'],
           ] as const
         ).map(([k, l]) => (
@@ -43,6 +45,7 @@ function AdminView({ me }: { me: Adult }) {
       {tab === 'children' && <Children />}
       {tab === 'bulk' && <Bulk />}
       {tab === 'reports' && <Reports me={me} />}
+      {tab === 'content' && <ContentCatalog viewer={me} />}
       {tab === 'backup' && <Backup />}
     </div>
   );

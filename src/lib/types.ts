@@ -92,6 +92,18 @@ export interface Note {
   t: number;
 }
 
+/** Мазмұн тексерісі: маман белгілеген қате немесе ұсыныс */
+export interface ContentFlag {
+  id: string;
+  authorId: string;
+  subject: string;
+  topic: string;
+  sample: string; // тапсырма мәтіні
+  note: string;
+  t: number;
+  resolved?: boolean;
+}
+
 /** Мұғалім берген тапсырма */
 export interface Assignment {
   id: string;
@@ -124,6 +136,7 @@ export interface DB {
   notes: Note[];
   assignments?: Assignment[];
   goals?: Goal[];
+  contentFlags?: ContentFlag[];
 }
 
 export type Session =

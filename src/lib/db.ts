@@ -5,7 +5,7 @@
  * интерфейс (функция атаулары) өзгермейді.
  */
 import { useSyncExternalStore } from 'react';
-import type { A11ySettings, Adult, Assignment, Child, ChildSettings, DB, Goal, Progress, Role, Session } from './types';
+import type { A11ySettings, Adult, Assignment, Child, ContentFlag, ChildSettings, DB, Goal, Progress, Role, Session } from './types';
 
 const KEY = 'qadam.db.v1';
 const SESSION_KEY = 'qadam.session';
@@ -297,6 +297,17 @@ export function addGoal(g: Omit<Goal, 'id' | 'createdAt'>) {
 export function removeGoal(id: string) {
   mutate((d) => {
     d.goals = (d.goals ?? []).filter((x) => x.id !== id);
+  });
+}
+
+export function addFlag(f: Omit<ContentFlag, 'id' | 't'>) {
+  mutate((d) => {
+    d.contentFlags = [...(d.contentFlags ?? []), { ...f, id: uid('f_'), t: Date.now() }];
+  });
+}
+export function resolveFlag(id: string) {
+  mutate((d) => {
+    d.contentFlags = (d.contentFlags ?? []).map((f) => (f.id === id ? { ...f, resolved: !f.resolved } : f));
   });
 }
 

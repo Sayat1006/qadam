@@ -3454,3 +3454,32 @@ button.pit:disabled {
     min-height: 74px;
   }
 }
+
+/* Ауыл: жыл мезгілдері мен орналастыру */
+.v-fall {
+  animation: vfall 8s linear infinite;
+}
+@keyframes vfall {
+  from {
+    transform: translate(0, -20px);
+  }
+  to {
+    transform: translate(40px, 600px);
+  }
+}
+.v-mill {
+  animation: spin360 6s linear infinite;
+}
+.vscene.editing .v-item {
+  cursor: grab;
+}
+.vscene.editing .v-item:active {
+  cursor: grabbing;
+}
+.vscene.editing .v-sway,
+.vscene.editing .v-graze {
+  animation: none;
+}
+.vscene.editing {
+  touch-action: none;
+}

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Reveal, useTitle } from '../../components/kit';
 import { Bar, Bota } from '../../components/ui';
-import { phaseNow, placeItems, SLOTS, VillageScene, type Placed } from '../../components/VillageScene';
+import { phaseNow, placeItems, seasonNow, SEASON_TEXT, SLOTS, VillageScene, type Placed } from '../../components/VillageScene';
 import { updateProgress } from '../../lib/db';
 import { playCue, speak } from '../../lib/media';
 import { useChild } from './ChildShell';
@@ -19,6 +19,10 @@ export const VILLAGE_ITEMS = [
   { id: 'eagle', e: '🦅', name: 'Бүркіт', cost: 20, about: 'Аспанда қалықтайды' },
   { id: 'house', e: '🏡', name: 'Үй', cost: 25, about: 'Терезесі түнде жанады' },
   { id: 'school', e: '🏫', name: 'Мектеп', cost: 40, about: 'Ауылдың білім ордасы' },
+  { id: 'garden', e: '🥕', name: 'Бау-бақша', cost: 22, about: 'Көкөніс өсіреміз' },
+  { id: 'bridge', e: '🌉', name: 'Көпір', cost: 30, about: 'Өзеннің арғы бетіне' },
+  { id: 'mill', e: '🌬️', name: 'Диірмен', cost: 35, about: 'Желмен айналады' },
+  { id: 'culture', e: '🏛️', name: 'Мәдениет үйі', cost: 45, about: 'Ән мен күй кеші' },
   { id: 'rainbow', e: '🌈', name: 'Кемпірқосақ', cost: 50, about: 'Ең сирек сыйлық' },
 ];
 
@@ -51,6 +55,7 @@ export function Village() {
   const left = progress.stars - progress.spentStars;
   const [fresh, setFresh] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
+  const [editing, setEditing] = useState(false);
 
   const count = (id: string) => progress.village.filter((v) => v === id).length;
   const placed = placeItems(progress.village).length;
@@ -90,7 +95,7 @@ export function Village() {
       <div className="row spread" style={{ alignItems: 'flex-end' }}>
         <div>
           <p className="eyebrow">
-            {PHASE_TEXT[phase]} · {lvl.icon} {lvl.name}
+            {SEASON_TEXT[seasonNow()]} · {PHASE_TEXT[phase]} · {lvl.icon} {lvl.name}
           </p>
           <h1 style={{ margin: 0 }}>Менің ауылым</h1>
         </div>
@@ -110,9 +115,33 @@ export function Village() {
           }
         }}
       >
-        <VillageScene village={progress.village} fresh={fresh} onTap={onTap} />
+        <VillageScene
+          village={progress.village}
+          fresh={fresh}
+          onTap={onTap}
+          positions={progress.villagePos}
+          editing={editing}
+          onMove={(key, x, y) => updateProgress(child.id, (p) => (p.villagePos = { ...(p.villagePos ?? {}), [key]: [x, y] }))}
+        />
       </div>
       <p className="vpan-hint muted small">👆 Даланы солға-оңға жылжытып қара</p>
+      {placed > 0 && (
+        <div className="row">
+          <button className={`btn ${editing ? '' : 'secondary'}`} aria-pressed={editing} onClick={() => setEditing((e) => !e)}>
+            {editing ? '✓ Дайын' : '✋ Орналастыру'}
+          </button>
+          {editing && (
+            <>
+              <span className="muted small">Нысанды сүйреп апар немесе таңдап, бағыт пернелерімен жылжыт.</span>
+              {progress.villagePos && (
+                <button className="btn ghost" onClick={() => updateProgress(child.id, (p) => (p.villagePos = undefined))}>
+                  Бастапқы орынға қайтару
+                </button>
+              )}
+            </>
+          )}
+        </div>
+      )}
       <div className="card vlevel">
           <span className="vlevel-icon" aria-hidden="true">
             {lvl.icon}

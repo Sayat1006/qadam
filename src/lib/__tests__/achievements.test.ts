@@ -46,3 +46,10 @@ describe('levelProgress', () => {
     expect(levelProgress(prog({ attempts }), 'math').value).toBe(100);
   });
 });
+
+import { seasonNow } from '../../components/VillageScene';
+describe('жыл мезгілі', () => {
+  it.each([
+    [0, 'winter'], [1, 'winter'], [2, 'spring'], [4, 'spring'], [5, 'summer'], [7, 'summer'], [8, 'autumn'], [10, 'autumn'], [11, 'winter'],
+  ])('%i-ай → %s', (m, s) => expect(seasonNow(new Date(2026, m as number, 10))).toBe(s));
+});

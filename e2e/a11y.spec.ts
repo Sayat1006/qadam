@@ -113,3 +113,19 @@ test('карта: дұрыс қаланы басу', async ({ page }, info) => {
   }
   await expect(page.getByText(`Дұрыс! ${name}`)).toBeVisible();
 });
+
+test('ауылдағы нысанды пернетақтамен жылжытып, сақтауға болады', async ({ page }, info) => {
+  test.skip(info.project.name === 'mobile');
+  await seed(page, { session: 'child' });
+  await page.goto('/child/village');
+  await page.getByRole('button', { name: '✋ Орналастыру' }).click();
+  const yurt = page.getByRole('button', { name: 'Киіз үй', exact: true });
+  await yurt.focus();
+  await page.keyboard.press('ArrowRight');
+  await page.keyboard.press('ArrowRight');
+  const pos = await page.evaluate(() => JSON.parse(localStorage.getItem('qadam.db.v1')!).progress.c1.villagePos);
+  expect(pos['yurt-0']).toEqual([524, 372]);
+  await page.getByRole('button', { name: 'Бастапқы орынға қайтару' }).click();
+  const after = await page.evaluate(() => JSON.parse(localStorage.getItem('qadam.db.v1')!).progress.c1.villagePos);
+  expect(after).toBeUndefined();
+});

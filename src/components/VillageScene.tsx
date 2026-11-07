@@ -2,9 +2,27 @@
  * «Менің ауылым» — суретті дала көрінісі (SVG).
  * Аспан нақты уақытқа қарай өзгереді, нысандар өз орнына (тереңдікпен) қойылады.
  */
-import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 
 export type Phase = 'morning' | 'day' | 'evening' | 'night';
+export type Season = 'winter' | 'spring' | 'summer' | 'autumn';
+
+export function seasonNow(d = new Date()): Season {
+  const m = d.getMonth();
+  if (m === 11 || m <= 1) return 'winter';
+  if (m <= 4) return 'spring';
+  if (m <= 7) return 'summer';
+  return 'autumn';
+}
+
+export const SEASON_TEXT: Record<Season, string> = { winter: 'Қыс', spring: 'Көктем', summer: 'Жаз', autumn: 'Күз' };
+
+const LEAVES: Record<Season, [string, string, string, string]> = {
+  summer: ['#3f9b52', '#378a48', '#46a95a', '#5cc06c'],
+  spring: ['#58b85e', '#4caa55', '#66c46c', '#8fd88f'],
+  autumn: ['#e08a2e', '#c96a1f', '#f0a93b', '#f5c04e'],
+  winter: ['#e9f1f8', '#dde8f3', '#f4f8fc', '#ffffff'],
+};
 
 export function phaseNow(d = new Date()): Phase {
   const h = d.getHours();
@@ -59,6 +77,13 @@ export const SLOTS: Record<string, [number, number][]> = {
     [760, 360],
   ],
   well: [[600, 430]],
+  bridge: [[420, 318]],
+  culture: [[860, 300]],
+  mill: [[60, 300]],
+  garden: [
+    [700, 500],
+    [240, 505],
+  ],
   horse: [
     [730, 420],
     [800, 455],
@@ -92,7 +117,7 @@ export const SLOTS: Record<string, [number, number][]> = {
 const HORIZON = 262;
 const ITEM_NAMES: Record<string, string> = {
   flower: 'Гүл', tree: 'Ағаш', sheep: 'Қой', yurt: 'Киіз үй', well: 'Құдық', horse: 'Жылқы',
-  camel: 'Түйе', apple: 'Алма ағашы', house: 'Үй', school: 'Мектеп',
+  camel: 'Түйе', apple: 'Алма ағашы', house: 'Үй', school: 'Мектеп', garden: 'Бау-бақша', bridge: 'Көпір', mill: 'Диірмен', culture: 'Мәдениет үйі',
 };
 const TUFTS: [number, number][] = Array.from({ length: 34 }, (_, i) => [((i * 263) % 980) + 10, 300 + ((i * 97) % 250)]);
 const depth = (y: number) => 0.42 + ((y - HORIZON) / (560 - HORIZON)) * 0.8;
@@ -113,15 +138,25 @@ function Smoke({ x, y }: { x: number; y: number }) {
   );
 }
 
+let SEASON: Season = 'summer';
+
 function Tree({ night }: { night: boolean }) {
+  const [a, b, c, d] = night && SEASON === 'summer' ? ['#1f4a36', '#1b4030', '#22513b', '#2a5d45'] : LEAVES[SEASON];
   return (
     <g className="v-sway">
       <Shadow w={70} />
       <rect x="-6" y="-46" width="12" height="48" rx="4" fill={night ? '#3b2a1f' : '#7a5232'} />
-      <circle cx="0" cy="-70" r="32" fill={night ? '#1f4a36' : '#3f9b52'} />
-      <circle cx="-22" cy="-52" r="22" fill={night ? '#1b4030' : '#378a48'} />
-      <circle cx="22" cy="-54" r="24" fill={night ? '#22513b' : '#46a95a'} />
-      <circle cx="-8" cy="-84" r="16" fill={night ? '#2a5d45' : '#5cc06c'} opacity="0.9" />
+      <circle cx="0" cy="-70" r="32" fill={a} />
+      <circle cx="-22" cy="-52" r="22" fill={b} />
+      <circle cx="22" cy="-54" r="24" fill={c} />
+      <circle cx="-8" cy="-84" r="16" fill={d} opacity="0.9" />
+      {SEASON === 'spring' &&
+        [
+          [-18, -74],
+          [10, -88],
+          [24, -60],
+          [-6, -50],
+        ].map(([x, y], i) => <circle key={i} cx={x} cy={y} r="4" fill="#ffb7d5" />)}
     </g>
   );
 }
@@ -236,8 +271,86 @@ function Animal({ e, size, cls }: { e: string; size: number; cls: string }) {
   );
 }
 
+function Garden() {
+  return (
+    <g>
+      <Shadow w={130} />
+      <rect x="-60" y="-26" width="120" height="28" rx="6" fill="#8b5a3c" />
+      {[-44, -22, 0, 22, 44].map((x, i) => (
+        <g key={x} transform={`translate(${x} -16)`}>
+          {SEASON === 'winter' ? (
+            <ellipse rx="9" ry="5" fill="#fff" />
+          ) : i % 2 ? (
+            <path d="M0 4 L-5 -14 M0 4 L0 -16 M0 4 L5 -14" stroke="#3f9b52" strokeWidth="3" />
+          ) : (
+            <circle r="9" fill="#7cc46b" stroke="#3f9b52" strokeWidth="2" />
+          )}
+        </g>
+      ))}
+    </g>
+  );
+}
+
+function Bridge() {
+  return (
+    <g>
+      <path d="M-70 0 Q0 -40 70 0" fill="none" stroke="#8b5a3c" strokeWidth="10" />
+      <path d="M-70 -14 Q0 -54 70 -14" fill="none" stroke="#a87449" strokeWidth="4" />
+      {[-50, -25, 0, 25, 50].map((x) => (
+        <line key={x} x1={x} y1={-Math.max(0, 28 - (x * x) / 120) - 2} x2={x} y2={-Math.max(0, 28 - (x * x) / 120) - 16} stroke="#a87449" strokeWidth="3" />
+      ))}
+    </g>
+  );
+}
+
+function Mill() {
+  return (
+    <g>
+      <Shadow w={70} />
+      <path d="M-22 0 L-14 -80 L14 -80 L22 0 Z" fill="#f4ecdb" stroke="#b9a988" strokeWidth="2" />
+      <path d="M-18 -78 L0 -98 L18 -78 Z" fill="#c0703f" />
+      <rect x="-6" y="-22" width="12" height="22" fill="#8b5a3c" />
+      <g transform="translate(0 -70)">
+        <g className="v-mill">
+          {[0, 90, 180, 270].map((a) => (
+            <rect key={a} x="-4" y="-62" width="8" height="58" rx="2" fill="#fff" stroke="#9aa3b5" strokeWidth="1.5" transform={`rotate(${a})`} />
+          ))}
+          <circle r="5" fill="#7a5232" />
+        </g>
+      </g>
+    </g>
+  );
+}
+
+function Culture({ night }: { night: boolean }) {
+  const win = night ? '#ffd77a' : '#bfe3ff';
+  return (
+    <g>
+      <Shadow w={170} />
+      <rect x="-80" y="-60" width="160" height="60" fill="#fdf6e9" stroke="#c9b48a" strokeWidth="2" />
+      <path d="M-40 -60 A40 34 0 0 1 40 -60 Z" fill="#00afca" stroke="#0a7f93" strokeWidth="2" />
+      {[-66, -42, 42, 66].map((x) => (
+        <rect key={x} x={x - 5} y="-54" width="10" height="54" fill="#efe2c8" />
+      ))}
+      {[-18, 18].map((x) => (
+        <rect key={x} x={x - 8} y="-44" width="16" height="18" fill={win} stroke="#8b7a5c" strokeWidth="1.5" />
+      ))}
+      <rect x="-10" y="-24" width="20" height="24" fill="#8b5a3c" />
+      <circle cx="0" cy="-98" r="5" fill="#fec50c" />
+    </g>
+  );
+}
+
 function renderItem(type: string, i: number, night: boolean): ReactNode {
   switch (type) {
+    case 'garden':
+      return <Garden />;
+    case 'bridge':
+      return <Bridge />;
+    case 'mill':
+      return <Mill />;
+    case 'culture':
+      return <Culture night={night} />;
     case 'tree':
       return <Tree night={night} />;
     case 'apple':
@@ -251,7 +364,7 @@ function renderItem(type: string, i: number, night: boolean): ReactNode {
     case 'well':
       return <Well />;
     case 'flower':
-      return <Flower i={i} />;
+      return SEASON === 'winter' ? <ellipse cx="0" cy="-4" rx="14" ry="7" fill="#fff" opacity="0.9" /> : <Flower i={i} />;
     case 'sheep':
       return <Animal e="🐑" size={44} cls="v-graze" />;
     case 'horse':
@@ -271,7 +384,7 @@ export interface Placed {
   i: number;
 }
 
-export function placeItems(village: string[]): Placed[] {
+export function placeItems(village: string[], pos: Record<string, [number, number]> = {}): Placed[] {
   const used: Record<string, number> = {};
   const out: Placed[] = [];
   village.forEach((type, n) => {
@@ -280,13 +393,37 @@ export function placeItems(village: string[]): Placed[] {
     const k = used[type] ?? 0;
     if (k >= slots.length) return;
     used[type] = k + 1;
-    const [x, y] = slots[k];
-    out.push({ key: `${type}-${k}`, type, x, y, i: n });
+    const key = `${type}-${k}`;
+    const [x, y] = pos[key] ?? slots[k];
+    out.push({ key, type, x, y, i: n });
   });
   return out;
 }
 
-export function VillageScene({ village, fresh, onTap }: { village: string[]; fresh?: string | null; onTap?: (p: Placed) => void }) {
+const MOVABLE = (t: string) => t !== 'bridge';
+export const clampPos = (x: number, y: number): [number, number] => [Math.max(30, Math.min(970, Math.round(x))), Math.max(HORIZON + 40, Math.min(548, Math.round(y)))];
+
+export function VillageScene({
+  village,
+  fresh,
+  onTap,
+  season: seasonProp,
+  positions,
+  editing,
+  onMove,
+}: {
+  village: string[];
+  fresh?: string | null;
+  onTap?: (p: Placed) => void;
+  season?: Season;
+  positions?: Record<string, [number, number]>;
+  editing?: boolean;
+  onMove?: (key: string, x: number, y: number) => void;
+}) {
+  const season = seasonProp ?? seasonNow();
+  SEASON = season;
+  const svgRef = useRef<SVGSVGElement>(null);
+  const [drag, setDrag] = useState<{ key: string; x: number; y: number } | null>(null);
   const [phase, setPhase] = useState<Phase>(phaseNow);
   const [jump, setJump] = useState<string | null>(null);
   useEffect(() => {
@@ -299,12 +436,29 @@ export function VillageScene({ village, fresh, onTap }: { village: string[]; fre
     window.setTimeout(() => setJump(null), 600);
     onTap?.(p);
   }
-  const placed = useMemo(() => placeItems(village), [village]);
+  const placedBase = useMemo(() => placeItems(village, positions), [village, positions]);
+  const placed = drag ? placedBase.map((p) => (p.key === drag.key ? { ...p, x: drag.x, y: drag.y } : p)) : placedBase;
+  function toSvg(e: { clientX: number; clientY: number }) {
+    const svg = svgRef.current;
+    const m = svg?.getScreenCTM();
+    if (!svg || !m) return null;
+    const pt = new DOMPoint(e.clientX, e.clientY).matrixTransform(m.inverse());
+    return clampPos(pt.x, pt.y);
+  }
   const ground = placed.filter((p) => p.type !== 'rainbow' && p.type !== 'eagle').sort((a, b) => a.y - b.y);
   const eagles = placed.filter((p) => p.type === 'eagle');
   const rainbow = placed.some((p) => p.type === 'rainbow');
   const [s1, s2, s3] = SKY[phase];
-  const [g1, g2] = GROUND[phase];
+  const [g1, g2] =
+    season === 'winter'
+      ? night
+        ? ['#5d6d8a', '#3f4d68']
+        : ['#f2f7fc', '#d9e5f2']
+      : season === 'autumn'
+        ? night
+          ? ['#5a5232', '#3d3822']
+          : ['#d7c27a', '#b8994f']
+        : GROUND[phase];
 
   const stars = useMemo(
     () => Array.from({ length: 60 }, (_, i) => [(i * 137) % 1000, ((i * 71) % 220) + 6, (i % 3) * 0.5 + 0.8] as const),
@@ -312,7 +466,30 @@ export function VillageScene({ village, fresh, onTap }: { village: string[]; fre
   );
 
   return (
-    <svg className={`vscene ${phase}`} viewBox="0 0 1000 560" role="group" aria-label={`Ауыл көрінісі: ${placed.length} нысан. Нысанды таңдап, Enter басыңыз.`}>
+    <svg
+      ref={svgRef}
+      className={`vscene ${phase} ${season} ${editing ? 'editing' : ''}`}
+      viewBox="0 0 1000 560"
+      role="group"
+      aria-label={
+        editing
+          ? `Орналастыру режимі: нысанды тінтуірмен сүйреңіз немесе таңдап, бағыт пернелерімен жылжытыңыз.`
+          : `Ауыл көрінісі (${SEASON_TEXT[season]}): ${placed.length} нысан. Нысанды таңдап, Enter басыңыз.`
+      }
+      onPointerMove={(e) => {
+        if (!drag) return;
+        const p = toSvg(e);
+        if (p) setDrag({ key: drag.key, x: p[0], y: p[1] });
+      }}
+      onPointerUp={() => {
+        if (drag) onMove?.(drag.key, drag.x, drag.y);
+        setDrag(null);
+      }}
+      onPointerLeave={() => {
+        if (drag) onMove?.(drag.key, drag.x, drag.y);
+        setDrag(null);
+      }}
+    >
       <defs>
         <linearGradient id="vSky" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor={s1} />
@@ -324,8 +501,8 @@ export function VillageScene({ village, fresh, onTap }: { village: string[]; fre
           <stop offset="1" stopColor={g2} />
         </linearGradient>
         <linearGradient id="vRiver" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stopColor={night ? '#2b4a8a' : '#6fc3ff'} />
-          <stop offset="1" stopColor={night ? '#3b5fa8' : '#a7e0ff'} />
+          <stop offset="0" stopColor={season === 'winter' ? '#cfe4f7' : night ? '#2b4a8a' : '#6fc3ff'} />
+          <stop offset="1" stopColor={season === 'winter' ? '#eef6ff' : night ? '#3b5fa8' : '#a7e0ff'} />
         </linearGradient>
         <radialGradient id="vSun">
           <stop offset="0" stopColor="#fff6c9" />
@@ -383,7 +560,7 @@ export function VillageScene({ village, fresh, onTap }: { village: string[]; fre
       <path d="M470 560 C 480 470, 540 420, 560 330 L 584 330 C 576 420, 540 480, 560 560 Z" fill={night ? '#4a5a4d' : '#e2cf9b'} opacity="0.7" />
 
       {/* Шөп пен тас (безендіру) */}
-      {TUFTS.map(([x, y], i) => {
+      {season !== 'winter' && TUFTS.map(([x, y], i) => {
         const sc = depth(y);
         return i % 5 === 0 ? (
           <ellipse key={i} cx={x} cy={y} rx={9 * sc} ry={5 * sc} fill={night ? '#3c4a52' : '#a9b2a4'} opacity="0.8" />
@@ -404,8 +581,33 @@ export function VillageScene({ village, fresh, onTap }: { village: string[]; fre
             role="button"
             tabIndex={0}
             aria-label={ITEM_NAMES[p.type] ?? p.type}
-            onClick={() => activate(p)}
+            onClick={() => !editing && activate(p)}
+            onPointerDown={(e) => {
+              if (!editing || !MOVABLE(p.type)) return;
+              e.preventDefault();
+              (e.currentTarget as Element).setPointerCapture?.(e.pointerId);
+              setDrag({ key: p.key, x: p.x, y: p.y });
+            }}
+            onPointerMove={(e) => {
+              if (!drag || drag.key !== p.key) return;
+              const q = toSvg(e);
+              if (q) setDrag({ key: p.key, x: q[0], y: q[1] });
+            }}
+            onPointerUp={() => {
+              if (drag && drag.key === p.key) onMove?.(p.key, drag.x, drag.y);
+              setDrag(null);
+            }}
             onKeyDown={(e) => {
+              if (editing && MOVABLE(p.type)) {
+                const d: Record<string, [number, number]> = { ArrowLeft: [-12, 0], ArrowRight: [12, 0], ArrowUp: [0, -10], ArrowDown: [0, 10] };
+                const v = d[e.key];
+                if (v) {
+                  e.preventDefault();
+                  const [nx, ny] = clampPos(p.x + v[0], p.y + v[1]);
+                  onMove?.(p.key, nx, ny);
+                }
+                return;
+              }
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 activate(p);
@@ -417,6 +619,21 @@ export function VillageScene({ village, fresh, onTap }: { village: string[]; fre
         );
       })}
       </g>
+
+      {/* Жыл мезгілі: қар немесе жапырақ */}
+      {(season === 'winter' || season === 'autumn') && (
+        <g aria-hidden="true">
+          {Array.from({ length: season === 'winter' ? 40 : 14 }, (_, i) => (
+            <g key={i} className="v-fall" style={{ animationDelay: `${-(i * 0.7) % 9}s`, animationDuration: `${7 + (i % 5)}s` }}>
+              {season === 'winter' ? (
+                <circle cx={(i * 97) % 1000} cy="-10" r={1.5 + (i % 3)} fill="#fff" opacity="0.9" />
+              ) : (
+                <ellipse cx={(i * 131) % 1000} cy="-10" rx="6" ry="3" fill={i % 2 ? '#e08a2e' : '#f0b13b'} />
+              )}
+            </g>
+          ))}
+        </g>
+      )}
 
       {/* Бүркіттер аспанда */}
       {eagles.map((p, k) => (

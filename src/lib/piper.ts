@@ -7,6 +7,10 @@
  */
 
 export type IssaiVoice = 'kk_KZ-raya-x_low' | 'kk_KZ-iseke-x_low' | 'kk_KZ-issai-high';
+export type EnVoice = 'en_US-amy-low';
+export type PiperVoice = IssaiVoice | EnVoice;
+
+export const EN_VOICES: { id: EnVoice; label: string; note: string }[] = [{ id: 'en_US-amy-low', label: 'Amy (ағылшын)', note: 'жеңіл модель' }];
 
 export const ISSAI_VOICES: { id: IssaiVoice; label: string; note: string }[] = [
   { id: 'kk_KZ-raya-x_low', label: 'Raya', note: 'жеңіл модель' },
@@ -15,7 +19,8 @@ export const ISSAI_VOICES: { id: IssaiVoice; label: string; note: string }[] = [
 ];
 
 const HF = 'https://huggingface.co/rhasspy/piper-voices/resolve/main';
-const PATHS: Record<IssaiVoice, string> = {
+const PATHS: Record<PiperVoice, string> = {
+  'en_US-amy-low': 'en/en_US/amy/low/en_US-amy-low.onnx',
   'kk_KZ-raya-x_low': 'kk/kk_KZ/raya/x_low/kk_KZ-raya-x_low.onnx',
   'kk_KZ-iseke-x_low': 'kk/kk_KZ/iseke/x_low/kk_KZ-iseke-x_low.onnx',
   'kk_KZ-issai-high': 'kk/kk_KZ/issai/high/kk_KZ-issai-high.onnx',
@@ -42,13 +47,13 @@ async function cacheGet(url: string) {
   }
 }
 
-export async function isDownloaded(v: IssaiVoice) {
+export async function isDownloaded(v: PiperVoice) {
   const url = `${HF}/${PATHS[v]}`;
   return !!(await cacheGet(url)) && !!(await cacheGet(url + '.json'));
 }
 
 /** Модельді жүктеу (прогреспен), Cache Storage-ке сақтау */
-export async function downloadVoice(v: IssaiVoice, onProgress?: (loaded: number, total: number) => void) {
+export async function downloadVoice(v: PiperVoice, onProgress?: (loaded: number, total: number) => void) {
   const url = `${HF}/${PATHS[v]}`;
   const c = await caches.open(CACHE);
   const cfg = await fetch(url + '.json');
@@ -71,7 +76,7 @@ export async function downloadVoice(v: IssaiVoice, onProgress?: (loaded: number,
   await c.put(url, new Response(new Blob(chunks), { headers: { 'Content-Type': 'application/octet-stream' } }));
 }
 
-export async function removeVoice(v: IssaiVoice) {
+export async function removeVoice(v: PiperVoice) {
   const url = `${HF}/${PATHS[v]}`;
   const c = await caches.open(CACHE);
   await c.delete(url);
@@ -92,8 +97,8 @@ function ort() {
   return ortP;
 }
 
-const sessions = new Map<IssaiVoice, Promise<{ session: import('onnxruntime-web').InferenceSession; cfg: VoiceConfig }>>();
-function loadSession(v: IssaiVoice) {
+const sessions = new Map<PiperVoice, Promise<{ session: import('onnxruntime-web').InferenceSession; cfg: VoiceConfig }>>();
+function loadSession(v: PiperVoice) {
   let p = sessions.get(v);
   if (!p) {
     p = (async () => {
@@ -180,7 +185,7 @@ function toWav(samples: Float32Array, rate: number) {
 }
 
 /** Мәтінді WAV дыбысқа айналдыру. lengthScale > 1 — баяуырақ */
-export async function synthesize(text: string, v: IssaiVoice, lengthScale = 1): Promise<Blob> {
+export async function synthesize(text: string, v: PiperVoice, lengthScale = 1): Promise<Blob> {
   const { session, cfg } = await loadSession(v);
   const o = await ort();
   const ids = await phonemize(text, cfg.espeak.voice);

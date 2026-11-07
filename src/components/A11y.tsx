@@ -3,7 +3,7 @@ import { canInstall, isIos, isStandalone, onInstallChange, promptInstall } from 
 import { defaultA11y } from '../lib/db';
 import type { A11ySettings } from '../lib/types';
 import { setVoicePrefs, speak, type VoiceKind } from '../lib/media';
-import { downloadVoice, isDownloaded, ISSAI_VOICES, piperSupported, removeVoice, type IssaiVoice } from '../lib/piper';
+import { downloadVoice, EN_VOICES, isDownloaded, ISSAI_VOICES, piperSupported, removeVoice, type PiperVoice } from '../lib/piper';
 import { Modal, Seg } from './ui';
 
 const ADULT_KEY = 'qadam.a11y.adult';
@@ -15,7 +15,7 @@ export function applyA11y(s: A11ySettings) {
   r.dataset.readable = String(s.readableFont);
   r.dataset.motion = s.reduceMotion ? 'reduce' : 'full';
   r.dataset.simple = String(s.simple);
-  setVoicePrefs((s.voice ?? 'browser') as VoiceKind, s.speechRate ?? 1);
+  setVoicePrefs((s.voice ?? 'browser') as VoiceKind, s.speechRate ?? 1, s.voiceEn);
 }
 
 export function loadAdultA11y(): A11ySettings {
@@ -74,7 +74,14 @@ export function A11yForm({ value, onChange }: { value: A11ySettings; onChange: (
         <input type="checkbox" checked={value.readableFont} onChange={(e) => set('readableFont', e.target.checked)} />
         Оқуға жеңіл қаріп (кең аралық)
       </label>
-      <VoicePicker value={value.voice ?? 'browser'} rate={value.speechRate ?? 1} onVoice={(v) => set('voice', v)} onRate={(r) => set('speechRate', r)} />
+      <VoicePicker
+        value={value.voice ?? 'browser'}
+        en={value.voiceEn ?? 'browser'}
+        rate={value.speechRate ?? 1}
+        onVoice={(v) => set('voice', v)}
+        onEn={(v) => set('voiceEn', v)}
+        onRate={(r) => set('speechRate', r)}
+      />
       <label className="check">
         <input type="checkbox" checked={value.autoRead} onChange={(e) => set('autoRead', e.target.checked)} />
         Тапсырманы автоматты түрде дауыстап оқу
@@ -135,27 +142,28 @@ export function useAdultA11y() {
 const SAMPLE = 'Сәлем! Мен — Ботамын. Бүгін 3 + 2 = 5 екенін бірге есептейміз.';
 
 /** Дауыс таңдау: браузер дауысы немесе ISSAI дауыстары (құрылғыға бір рет жүктеледі) */
-function VoicePicker({ value, rate, onVoice, onRate }: { value: string; rate: number; onVoice: (v: string) => void; onRate: (r: number) => void }) {
+function VoicePicker({ value, en, rate, onVoice, onEn, onRate }: { value: string; en: string; rate: number; onVoice: (v: string) => void; onEn: (v: string) => void; onRate: (r: number) => void }) {
   const [have, setHave] = useState<Record<string, boolean>>({});
-  const [busy, setBusy] = useState<{ id: IssaiVoice; loaded: number; total: number } | null>(null);
+  const [busy, setBusy] = useState<{ id: PiperVoice; loaded: number; total: number } | null>(null);
   const [err, setErr] = useState('');
   const supported = piperSupported();
 
   useEffect(() => {
     if (!supported) return;
     let alive = true;
-    Promise.all(ISSAI_VOICES.map(async (v) => [v.id, await isDownloaded(v.id)] as const)).then((r) => alive && setHave(Object.fromEntries(r)));
+    Promise.all([...ISSAI_VOICES, ...EN_VOICES].map(async (v) => [v.id, await isDownloaded(v.id)] as const)).then((r) => alive && setHave(Object.fromEntries(r)));
     return () => {
       alive = false;
     };
   }, [supported, busy]);
 
-  async function get(id: IssaiVoice) {
+  async function get(id: PiperVoice) {
     setErr('');
     setBusy({ id, loaded: 0, total: 0 });
     try {
       await downloadVoice(id, (loaded, total) => setBusy({ id, loaded, total }));
-      onVoice(id);
+      if (id.startsWith('en_')) onEn(id);
+      else onVoice(id);
     } catch (e) {
       setErr('Дауыс жүктелмеді. Интернетті тексеріп, қайта көріңіз.' + (e instanceof Error ? ` (${e.message})` : ''));
     }
@@ -218,6 +226,53 @@ function VoicePicker({ value, rate, onVoice, onRate }: { value: string; rate: nu
           );
         })}
       </div>
+      <p className="small" style={{ fontWeight: 800, margin: '6px 0 0' }}>
+        Ағылшынша мәтін
+      </p>
+      <div className="voice-list" role="radiogroup" aria-label="Ағылшын дауысы">
+        <label className={`voice-opt ${en === 'browser' ? 'on' : ''}`}>
+          <input type="radio" name="voice-en" checked={en === 'browser'} onChange={() => onEn('browser')} />
+          <span>
+            <strong>Құрылғы дауысы</strong>
+          </span>
+        </label>
+        {EN_VOICES.map((v) => {
+          const ok = have[v.id];
+          const loading = busy?.id === v.id;
+          return (
+            <div key={v.id} className={`voice-opt ${en === v.id ? 'on' : ''}`}>
+              <label style={{ display: 'flex', gap: 10, alignItems: 'center', flex: 1 }}>
+                <input type="radio" name="voice-en" checked={en === v.id} disabled={!ok} onChange={() => onEn(v.id)} />
+                <span>
+                  <strong>Piper · {v.label}</strong>
+                  <span className="muted small"> · {v.note}</span>
+                </span>
+              </label>
+              {!supported ? null : loading ? (
+                <span className="small" aria-live="polite">
+                  {busy.total ? `${Math.round((100 * busy.loaded) / busy.total)}%` : mb(busy.loaded)}
+                </span>
+              ) : ok ? (
+                <button
+                  type="button"
+                  className="btn ghost"
+                  onClick={async () => {
+                    await removeVoice(v.id);
+                    if (en === v.id) onEn('browser');
+                    setHave((h) => ({ ...h, [v.id]: false }));
+                  }}
+                >
+                  Жою
+                </button>
+              ) : (
+                <button type="button" className="btn secondary" disabled={!!busy} onClick={() => get(v.id)}>
+                  Жүктеу
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
       {busy && (
         <div className="bar" role="progressbar" aria-label="Дауыс жүктелуде" aria-valuemin={0} aria-valuemax={100} aria-valuenow={busy.total ? Math.round((100 * busy.loaded) / busy.total) : 0}>
           <span style={{ width: `${busy.total ? (100 * busy.loaded) / busy.total : 5}%` }} />
@@ -242,8 +297,9 @@ function VoicePicker({ value, rate, onVoice, onRate }: { value: string; rate: nu
           type="button"
           className="btn secondary"
           onClick={() => {
-            setVoicePrefs(value as VoiceKind, rate);
+            setVoicePrefs(value as VoiceKind, rate, en);
             speak(SAMPLE);
+            if (en !== 'browser') window.setTimeout(() => speak('Hello! Let us learn English together.', 'en-US'), 4500);
           }}
         >
           🔊 Тыңдап көру

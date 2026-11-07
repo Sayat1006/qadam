@@ -1,6 +1,6 @@
 /* Дауыстап оқу (TTS) және жұмсақ дыбыс белгілері */
 import { isLatin, normalizeKk } from './kkspeech';
-import { synthesize, type IssaiVoice } from './piper';
+import { synthesize, type EnVoice, type IssaiVoice, type PiperVoice } from './piper';
 
 let voices: SpeechSynthesisVoice[] = [];
 function refreshVoices() {
@@ -35,7 +35,9 @@ function pickVoice(lang: string) {
 export type VoiceKind = 'browser' | IssaiVoice;
 let voicePref: VoiceKind = 'browser';
 let ratePref = 1;
-export function setVoicePrefs(v: VoiceKind | undefined, rate = 1) {
+let enPref: 'browser' | EnVoice = 'browser';
+export function setVoicePrefs(v: VoiceKind | undefined, rate = 1, en?: string) {
+  enPref = en === 'en_US-amy-low' ? en : 'browser';
   voicePref = v && v !== ('female' as string) && v !== ('male' as string) ? v : 'browser';
   ratePref = rate;
 }
@@ -61,7 +63,7 @@ export function onSpeechState(f: (s: SpeechState) => void) {
 }
 let token = 0;
 
-function issaiAudio(text: string, v: IssaiVoice): Promise<string | null> {
+function issaiAudio(text: string, v: PiperVoice): Promise<string | null> {
   const key = `${v}|${ratePref}|${text}`;
   const hit = cache.get(key);
   if (hit) return hit;
@@ -109,11 +111,13 @@ export function speak(text: string, lang = 'kk-KZ', rate = 0.85) {
   const latin = isLatin(text) || lang.startsWith('en');
   const clean = latin ? text.replace(/[\u{1F000}-\u{1FFFF}\u{2600}-\u{27BF}]/gu, '') : normalizeKk(text);
   if (!clean) return;
-  // Ағылшын/орыс мәтіні және ISSAI дауысы таңдалмаса — браузер дауысы
+  // Орыс мәтіні — браузер дауысы; ағылшын — Piper (таңдалса) немесе браузер; қазақ — ISSAI (таңдалса)
   if (lang.startsWith('ru')) return browserSpeak(text.replace(/\([^)]*\)/g, ''), lang, rate * ratePref);
-  if (latin || voicePref === 'browser') return browserSpeak(clean, latin ? 'en-US' : lang, rate * ratePref);
+  if (latin && enPref === 'browser') return browserSpeak(clean, 'en-US', rate * ratePref);
+  if (!latin && voicePref === 'browser') return browserSpeak(clean, lang, rate * ratePref);
   const my = ++token;
-  const v = voicePref;
+  const v: PiperVoice = latin ? (enPref as EnVoice) : (voicePref as IssaiVoice);
+  if (latin) lang = 'en-US';
   setState({ status: 'preparing', text });
   issaiAudio(clean, v).then((url) => {
     if (my !== token) return; // басқа мәтін басылды

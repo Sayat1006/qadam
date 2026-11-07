@@ -21,6 +21,7 @@ export interface A11ySettings {
   autoRead: boolean; // тапсырманы автоматты түрде дауыстап оқу
   simple: boolean; // қарапайым интерфейс: декорсыз, бір мақсат
   voice?: string; // 'browser' немесе ISSAI дауысы (kk_KZ-…)
+  voiceEn?: string; // 'browser' немесе ағылшын Piper дауысы
   speechRate?: number; // дауыс жылдамдығы
 }
 

@@ -3,10 +3,11 @@ import { Bar, Hero } from '../../components/ui';
 import { LEVEL_NAMES, subjects } from '../../content';
 import { badges, streaks } from '../../lib/achievements';
 import { useChild } from './ChildShell';
+import { WeeklyCard } from './Weekly';
 
 export function Achievements() {
   useTitle('Жетістіктер');
-  const { progress } = useChild();
+  const { child, progress } = useChild();
   const list = badges(progress);
   const st = streaks(progress);
   const unlocked = list.filter((b) => b.done).length;
@@ -39,6 +40,8 @@ export function Achievements() {
           </div>
         </div>
       </Hero>
+
+      <WeeklyCard child={child} progress={progress} />
 
       <section aria-labelledby="badges-h">
         <h2 id="badges-h">Белгілер</h2>

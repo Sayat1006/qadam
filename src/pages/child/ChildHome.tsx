@@ -8,6 +8,7 @@ import { today, updateProgress, useStore } from '../../lib/db';
 import { assignmentStatus, topicTitle } from '../../lib/plans';
 import type { MoodId } from '../../lib/types';
 import { useChild } from './ChildShell';
+import { WeeklyCard } from './Weekly';
 
 export const MOODS: { id: MoodId; e: string; l: string }[] = [
   { id: 'great', e: '😄', l: 'Тамаша' },
@@ -395,6 +396,8 @@ export function ChildHome() {
           )}
         </Reveal>
       </div>
+
+      <WeeklyCard child={child} progress={progress} />
 
       <Reveal className="card">
         <div className="row spread" style={{ marginBottom: 12 }}>

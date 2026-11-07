@@ -63,6 +63,7 @@ export function Lesson() {
       if (isLast) {
         p.lessonsDone[sid] = (p.lessonsDone[sid] ?? 0) + 1;
         if (perfect) p.perfectLessons = (p.perfectLessons ?? 0) + 1;
+        p.lessonLog = [...(p.lessonLog ?? []), { t: Date.now(), subject: sid, perfect }].slice(-500);
         p.lastLesson = { subject: sid, level, t: Date.now(), score: nextResults.filter((x) => x.firstTry).length, total: nextResults.length };
         const cur = p.levels[sid] ?? 1;
         if (level === cur && decideLevel(p.attempts, sid, cur, subject!.levels.length) === 'up') {

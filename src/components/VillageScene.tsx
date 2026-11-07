@@ -77,6 +77,7 @@ export const SLOTS: Record<string, [number, number][]> = {
     [760, 360],
   ],
   well: [[600, 430]],
+  tower: [[500, 292]],
   bridge: [[420, 318]],
   culture: [[860, 300]],
   mill: [[60, 300]],
@@ -117,7 +118,7 @@ export const SLOTS: Record<string, [number, number][]> = {
 const HORIZON = 262;
 const ITEM_NAMES: Record<string, string> = {
   flower: 'Гүл', tree: 'Ағаш', sheep: 'Қой', yurt: 'Киіз үй', well: 'Құдық', horse: 'Жылқы',
-  camel: 'Түйе', apple: 'Алма ағашы', house: 'Үй', school: 'Мектеп', garden: 'Бау-бақша', bridge: 'Көпір', mill: 'Диірмен', culture: 'Мәдениет үйі',
+  camel: 'Түйе', apple: 'Алма ағашы', house: 'Үй', school: 'Мектеп', garden: 'Бау-бақша', tower: 'Бәйтерек', bridge: 'Көпір', mill: 'Диірмен', culture: 'Мәдениет үйі',
 };
 const TUFTS: [number, number][] = Array.from({ length: 34 }, (_, i) => [((i * 263) % 980) + 10, 300 + ((i * 97) % 250)]);
 const depth = (y: number) => 0.42 + ((y - HORIZON) / (560 - HORIZON)) * 0.8;
@@ -341,8 +342,22 @@ function Culture({ night }: { night: boolean }) {
   );
 }
 
+function Tower({ night }: { night: boolean }) {
+  return (
+    <g>
+      <Shadow w={60} />
+      <path d="M-6 0 L-3 -110 L3 -110 L6 0 Z" fill="#f4f6fb" stroke="#b9c2d6" strokeWidth="2" />
+      <path d="M-14 -110 Q0 -150 14 -110 Q0 -100 -14 -110 Z" fill="#c9d3e6" stroke="#9aa6c0" strokeWidth="2" />
+      <circle cx="0" cy="-122" r="12" fill={night ? '#ffd77a' : '#f2c14e'} stroke="#c98d12" strokeWidth="2" />
+      <path d="M-24 -104 Q0 -96 24 -104" stroke="#b9c2d6" strokeWidth="3" fill="none" />
+    </g>
+  );
+}
+
 function renderItem(type: string, i: number, night: boolean): ReactNode {
   switch (type) {
+    case 'tower':
+      return <Tower night={night} />;
     case 'garden':
       return <Garden />;
     case 'bridge':

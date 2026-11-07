@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { canInstall, isIos, isStandalone, onInstallChange, promptInstall } from '../lib/pwa';
 import { defaultA11y } from '../lib/db';
 import type { A11ySettings } from '../lib/types';
 import { setVoicePrefs, speak, type VoiceKind } from '../lib/media';
@@ -90,6 +91,7 @@ export function A11yForm({ value, onChange }: { value: A11ySettings; onChange: (
         <input type="checkbox" checked={value.simple} onChange={(e) => set('simple', e.target.checked)} />
         Қарапайым интерфейс (артық безендірусіз)
       </label>
+      <InstallRow />
     </div>
   );
 }
@@ -249,4 +251,24 @@ function VoicePicker({ value, rate, onVoice, onRate }: { value: string; rate: nu
       </div>
     </div>
   );
+}
+
+/** «Телефонға орнату»: Android/компьютерде — жүйелік терезе, iPhone-да — нұсқаулық */
+function InstallRow() {
+  const [, force] = useState(0);
+  useEffect(() => onInstallChange(() => force((n) => n + 1)), []);
+  if (typeof window === 'undefined' || isStandalone()) return null;
+  if (canInstall())
+    return (
+      <button type="button" className="btn secondary" onClick={() => promptInstall()}>
+        📲 Телефонға орнату (интернетсіз де ашылады)
+      </button>
+    );
+  if (isIos())
+    return (
+      <p className="muted small" style={{ margin: 0 }}>
+        📲 iPhone-ға орнату: Safari-де «Бөлісу» батырмасын басып, «Басты экранға қосу» таңдаңыз.
+      </p>
+    );
+  return null;
 }

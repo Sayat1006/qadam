@@ -129,3 +129,23 @@ test('ауылдағы нысанды пернетақтамен жылжыты�
   const after = await page.evaluate(() => JSON.parse(localStorage.getItem('qadam.db.v1')!).progress.c1.villagePos);
   expect(after).toBeUndefined();
 });
+
+test('офлайн: бір рет ашылған сайт интернетсіз сабақты ашады', async ({ page, context }, info) => {
+  test.skip(info.project.name === 'mobile');
+  await seed(page, { session: 'child' });
+  await page.goto('/child');
+  await page.evaluate(async () => {
+    const reg = await navigator.serviceWorker.ready;
+    if (!navigator.serviceWorker.controller) await new Promise((r) => navigator.serviceWorker.addEventListener('controllerchange', r, { once: true }));
+    return !!reg.active;
+  });
+  // Барлық файл кэшке түскенше күтеміз
+  await page.waitForFunction(async () => (await caches.keys()).some((k) => k.startsWith('qadam-shell-')));
+  await page.waitForTimeout(1500);
+  await context.setOffline(true);
+  await page.goto('/child/lesson/math');
+  await expect(page.locator('.task-card')).toBeVisible();
+  await page.goto('/child/games/togyz');
+  await expect(page.getByText('Бота:')).toBeVisible();
+  await context.setOffline(false);
+});

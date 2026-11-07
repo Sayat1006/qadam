@@ -107,7 +107,7 @@ export function A11yButton({ value, onChange }: { value: A11ySettings; onChange:
   const [open, setOpen] = useState(false);
   return (
     <>
-      <button type="button" className="btn secondary icon" onClick={() => setOpen(true)} aria-label="Көрініс пен дыбыс баптаулары" title="Баптаулар">
+      <button type="button" className="btn secondary icon" onClick={() => setOpen(true)} aria-label="Көрініс пен дыбыс баптаулары" data-tip="Баптаулар">
         <span aria-hidden="true" style={{ fontSize: '1.3rem' }}>
           ⚙️
         </span>

@@ -13,6 +13,7 @@ const pages: { path: string; session: 'child' | 'parent' | 'teacher' | 'admin' |
   { path: '/child/lesson/digital', session: 'child' },
   { path: '/child/lesson/reading', session: 'child' },
   { path: '/child/placement/math', session: 'child' },
+  { path: '/child/exam/math', session: 'child' },
   { path: '/child/games', session: 'child' },
   { path: '/child/games/memory', session: 'child' },
   { path: '/child/games/asyq', session: 'child' },

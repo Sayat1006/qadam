@@ -9,13 +9,13 @@ export function Brand({ to = '/' }: { to?: string }) {
       <svg className="brand-mark" viewBox="0 0 64 64" aria-hidden="true">
         <defs>
           <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#5145D8" />
-            <stop offset="1" stopColor="#4388FF" />
+            <stop offset="0" stopColor="#243B80" />
+            <stop offset="1" stopColor="#6555E8" />
           </linearGradient>
         </defs>
         <rect width="64" height="64" rx="18" fill={`url(#${gid})`} />
         <path d="M16 44h10V34h10V24h12" stroke="#fff" strokeWidth="5.5" strokeLinecap="round" strokeLinejoin="round" fill="none" />
-        <circle cx="48" cy="18" r="5" fill="#FFCA70" />
+        <circle cx="48" cy="18" r="5" fill="#38BDF8" />
       </svg>
       <span className="brand-word">QADAM</span>
     </Link>
@@ -24,15 +24,24 @@ export function Brand({ to = '/' }: { to?: string }) {
 
 export function Modal({ title, onClose, children, labelId = 'modal-title' }: { title: string; onClose?: () => void; children: ReactNode; labelId?: string }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [closing, setClosing] = useState(false);
+  // Жабылу анимациясы (180 мс), кейін ата-компонентке хабарлау
+  const requestClose = () => {
+    if (!onClose) return;
+    setClosing(true);
+    window.setTimeout(() => closeRef.current?.(), document.documentElement.dataset.motion === 'reduce' ? 0 : 180);
+  };
   const closeRef = useRef(onClose);
   closeRef.current = onClose;
+  const reqRef = useRef(requestClose);
+  reqRef.current = requestClose;
   useEffect(() => {
     const prev = document.activeElement as HTMLElement | null;
     const el = ref.current;
     const first = el?.querySelector<HTMLElement>('button, [href], input, select, textarea');
     first?.focus();
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && closeRef.current) closeRef.current();
+      if (e.key === 'Escape' && closeRef.current) reqRef.current();
       if (e.key === 'Tab' && el) {
         const f = el.querySelectorAll<HTMLElement>('button, [href], input, select, textarea');
         if (!f.length) return;
@@ -54,9 +63,16 @@ export function Modal({ title, onClose, children, labelId = 'modal-title' }: { t
     };
   }, []);
   return (
-    <div className="modal-backdrop" onClick={(e) => e.target === e.currentTarget && onClose?.()}>
+    <div className={`modal-backdrop ${closing ? 'closing' : ''}`} onClick={(e) => e.target === e.currentTarget && requestClose()}>
       <div className="modal" role="dialog" aria-modal="true" aria-labelledby={labelId} ref={ref}>
-        <h2 id={labelId}>{title}</h2>
+        <div className="modal-head">
+          <h2 id={labelId}>{title}</h2>
+          {onClose && (
+            <button type="button" className="btn ghost icon" onClick={requestClose} aria-label="Жабу" data-tip="Жабу">
+              ✕
+            </button>
+          )}
+        </div>
         {children}
       </div>
     </div>
@@ -98,9 +114,9 @@ export function SpeakButton({ text, label = 'Тыңдау', lang }: { text: stri
       onPointerEnter={() => prefetchSpeech(text)}
       onFocus={() => prefetchSpeech(text)}
       onClick={() => (mine === 'idle' ? speak(text, lang) : stopSpeaking())}
+      data-tip={mine === 'idle' ? label : 'Тоқтату'}
       aria-label={mine === 'preparing' ? 'Дауыс дайындалуда, тоқтату' : mine === 'playing' ? 'Тоқтату' : `${label}: ${text}`}
       aria-busy={mine === 'preparing'}
-      title={mine === 'idle' ? label : 'Тоқтату'}
     >
       <span aria-hidden="true">{mine === 'preparing' ? <span className="spinner" /> : mine === 'playing' ? '⏸' : '🔊'}</span>
     </button>

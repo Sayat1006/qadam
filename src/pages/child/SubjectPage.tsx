@@ -69,6 +69,11 @@ export function SubjectPage() {
                       Қайталау
                     </Link>
                   )}
+                  {state === 'current' && (
+                    <Link className="btn secondary" to={`/child/exam/${sid}`}>
+                      <span aria-hidden="true">⏱</span> Өзіңді тексер
+                    </Link>
+                  )}
                 </div>
                 <p className="muted small" style={{ margin: '6px 0 0' }}>
                   {l.topics.map((t) => t.title).filter((x, i, a) => a.indexOf(x) === i).join(' · ')}

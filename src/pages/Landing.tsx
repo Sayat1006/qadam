@@ -183,9 +183,9 @@ export function Landing() {
           </Reveal>
           <div className="grid cols-4 skill-grid">
             {[
-              { i: '🎧', t: 'Тыңдалым', d: 'Кез келген тапсырманы, кеңесті және мәтінді дауыстап тыңдауға болады.', c: '#4388FF' },
-              { i: '📖', t: 'Оқылым', d: 'Буыннан сөзге, сөзден сөйлемге, сөйлемнен мәтінге — қадам-қадаммен оқу.', c: '#5145D8' },
-              { i: '✍️', t: 'Жазылым', d: 'Әріптер мен буындардан сөз құрау, сөздерден сөйлем құрастыру.', c: '#9275FF' },
+              { i: '🎧', t: 'Тыңдалым', d: 'Кез келген тапсырманы, кеңесті және мәтінді дауыстап тыңдауға болады.', c: '#38BDF8' },
+              { i: '📖', t: 'Оқылым', d: 'Буыннан сөзге, сөзден сөйлемге, сөйлемнен мәтінге — қадам-қадаммен оқу.', c: '#243B80' },
+              { i: '✍️', t: 'Жазылым', d: 'Әріптер мен буындардан сөз құрау, сөздерден сөйлем құрастыру.', c: '#6555E8' },
               { i: '🎮', t: 'Ойын', d: 'Жұбын тап, Әріп керуені, Киіз үй, Сауда базары — ойнай жүріп үйрен.', c: '#35C98A' },
             ].map((s, k) => (
               <Reveal key={s.t} delay={k * 90} className="card skill-card lift tilt" style={{ ['--c' as string]: s.c }}>
@@ -332,7 +332,7 @@ export function Landing() {
               { i: '📝', t: 'Мұғаліммен байланыс', d: 'Ортақ жазбалар, ұсынылған пән және деңгейді қолмен өзгерту мүмкіндігі.' },
             ].map((f, i) => (
               <Reveal key={f.t} delay={i * 90} className="card lift">
-                <span className="skill-icon" aria-hidden="true" style={{ ['--c' as string]: '#4388FF' }}>
+                <span className="skill-icon" aria-hidden="true" style={{ ['--c' as string]: '#6555E8' }}>
                   {f.i}
                 </span>
                 <h3>{f.t}</h3>
@@ -395,9 +395,9 @@ function Journey() {
       <svg className="journey-path" viewBox="0 0 1000 220" preserveAspectRatio="none" aria-hidden="true">
         <defs>
           <linearGradient id="jg" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0" stopColor="#5145D8" />
-            <stop offset="0.5" stopColor="#4388FF" />
-            <stop offset="1" stopColor="#9275FF" />
+            <stop offset="0" stopColor="#243B80" />
+            <stop offset="0.5" stopColor="#6555E8" />
+            <stop offset="1" stopColor="#38BDF8" />
           </linearGradient>
         </defs>
         <path d="M20 170 C 180 170, 180 60, 260 60 S 420 160, 500 150 S 650 50, 740 60 S 900 170, 980 120" fill="none" stroke="url(#jg)" strokeWidth="6" strokeLinecap="round" className="journey-line" />

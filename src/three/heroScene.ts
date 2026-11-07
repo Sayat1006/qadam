@@ -11,7 +11,7 @@ export interface HeroSceneHandle {
   dispose: () => void;
 }
 
-const STEP_COLORS = ['#5145D8', '#4F5CE6', '#4A72F2', '#4388FF', '#5FA9FF'];
+const STEP_COLORS = ['#243B80', '#34479C', '#4A4FC4', '#6555E8', '#7C8BF4'];
 
 function letterSprite(text: string, color: string) {
   const size = 128;
@@ -62,7 +62,7 @@ export function createHeroScene(canvas: HTMLCanvasElement, opts: { dark: boolean
   const key = new THREE.DirectionalLight('#ffffff', 2.2);
   key.position.set(4, 6, 5);
   scene.add(key);
-  const rim = new THREE.DirectionalLight('#9275FF', 1.6);
+  const rim = new THREE.DirectionalLight('#8B7CF6', 1.6);
   rim.position.set(-5, 2, -4);
   scene.add(rim);
 
@@ -99,9 +99,9 @@ export function createHeroScene(canvas: HTMLCanvasElement, opts: { dark: boolean
   world.add(glow);
 
   // Прогресс сақиналары
-  const ringMat = new THREE.MeshPhysicalMaterial({ color: '#65D8F2', emissive: '#2aa6c9', emissiveIntensity: 0.4, roughness: 0.2, clearcoat: 1 });
+  const ringMat = new THREE.MeshPhysicalMaterial({ color: '#38BDF8', emissive: '#2aa6c9', emissiveIntensity: 0.4, roughness: 0.2, clearcoat: 1 });
   const ring1 = new THREE.Mesh(new THREE.TorusGeometry(0.78, 0.045, 16, 96), ringMat);
-  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.02, 0.03, 16, 96), new THREE.MeshPhysicalMaterial({ color: '#9275FF', roughness: 0.3, clearcoat: 1 }));
+  const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.02, 0.03, 16, 96), new THREE.MeshPhysicalMaterial({ color: '#8B7CF6', roughness: 0.3, clearcoat: 1 }));
   ring1.position.copy(orb.position);
   ring2.position.copy(orb.position);
   ring1.rotation.x = 1.2;
@@ -110,9 +110,9 @@ export function createHeroScene(canvas: HTMLCanvasElement, opts: { dark: boolean
 
   // Кітаптар
   const books = [
-    { b: makeBook('#9275FF'), p: new THREE.Vector3(-3.1, 1.5, -0.6), r: 0.4 },
+    { b: makeBook('#8B7CF6'), p: new THREE.Vector3(-3.1, 1.5, -0.6), r: 0.4 },
     { b: makeBook('#35C98A'), p: new THREE.Vector3(0.2, 2.3, -1.2), r: -0.3 },
-    { b: makeBook('#4388FF'), p: new THREE.Vector3(3.4, -0.9, 0.6), r: 0.8 },
+    { b: makeBook('#38BDF8'), p: new THREE.Vector3(3.4, -0.9, 0.6), r: 0.8 },
   ];
   books.forEach(({ b, p, r }) => {
     b.position.copy(p);
@@ -122,10 +122,10 @@ export function createHeroScene(canvas: HTMLCanvasElement, opts: { dark: boolean
 
   // Әріптер мен белгілер
   const glyphs: [string, string, THREE.Vector3][] = [
-    ['Ә', '#5145D8', new THREE.Vector3(-1.4, 2.3, 0.8)],
+    ['Ә', '#243B80', new THREE.Vector3(-1.4, 2.3, 0.8)],
     ['+', '#35C98A', new THREE.Vector3(1.2, -1.9, 1.4)],
-    ['π', '#4388FF', new THREE.Vector3(-3.6, -0.4, 1.0)],
-    ['ABC', '#9275FF', new THREE.Vector3(3.9, 2.4, -0.8)],
+    ['π', '#38BDF8', new THREE.Vector3(-3.6, -0.4, 1.0)],
+    ['ABC', '#8B7CF6', new THREE.Vector3(3.9, 2.4, -0.8)],
     ['?', '#C27A12', new THREE.Vector3(0.9, 0.6, 2.2)],
   ];
   const sprites = glyphs.map(([t, c, p]) => {
@@ -137,10 +137,10 @@ export function createHeroScene(canvas: HTMLCanvasElement, opts: { dark: boolean
 
   // Ұсақ шарлар
   const orbs = [
-    ['#65D8F2', new THREE.Vector3(-2.2, 2.6, -1.5), 0.12],
-    ['#9275FF', new THREE.Vector3(1.6, 2.8, 0.4), 0.09],
+    ['#38BDF8', new THREE.Vector3(-2.2, 2.6, -1.5), 0.12],
+    ['#8B7CF6', new THREE.Vector3(1.6, 2.8, 0.4), 0.09],
     ['#35C98A', new THREE.Vector3(-0.5, -2.2, 1.2), 0.1],
-    ['#4388FF', new THREE.Vector3(4.2, 0.8, -1.4), 0.14],
+    ['#38BDF8', new THREE.Vector3(4.2, 0.8, -1.4), 0.14],
   ].map(([c, p, r]) => {
     const m = new THREE.Mesh(
       new THREE.SphereGeometry(r as number, 24, 24),

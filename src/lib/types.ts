@@ -81,6 +81,7 @@ export interface Progress {
   placement?: Record<string, { level: number; t: number }>; // бастапқы диагностика нәтижесі
   villagePos?: Record<string, [number, number]>; // бала өзі орналастырған нысандар
   lessonLog?: { t: number; subject: string; perfect: boolean }[]; // аяқталған сабақтар
+  examLog?: { t: number; subject: string; level: number; score: number; total: number; ms: number }[]; // «Өзіңді тексер» нәтижелері
   claimedWeeks?: string[]; // жүлдесі алынған апталар
   lastLesson?: { subject: string; level: number; t: number; score: number; total: number };
 }

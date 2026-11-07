@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Confetti } from '../../components/kit';
 import { badges, type Badge } from '../../lib/achievements';
 import { playCue, speak } from '../../lib/media';
-import { NavLink, Navigate, Outlet, useNavigate, useOutletContext } from 'react-router-dom';
+import { NavLink, Navigate, Outlet, useLocation, useNavigate, useOutletContext } from 'react-router-dom';
 import { A11yButton, applyA11y } from '../../components/A11y';
 import { Bota, Brand, Modal } from '../../components/ui';
 import { logout, setSession, today, updateChild, updateProgress, useStore } from '../../lib/db';
@@ -29,6 +29,7 @@ const STRETCHES = [
 export function ChildShell() {
   const { db, session } = useStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const child = session?.kind === 'child' ? db.children.find((c) => c.id === session.id) : undefined;
   const progress = child ? db.progress[child.id] : undefined;
   const [activeSec, setActiveSec] = useState(0);
@@ -164,7 +165,7 @@ export function ChildShell() {
             ⭐ {starsLeft}
           </span>
           {a11y}
-          <button className="btn secondary icon" onClick={exit} aria-label={viaAdult ? 'Панельге оралу' : 'Шығу'} title={viaAdult ? 'Панельге оралу' : 'Шығу'}>
+          <button className="btn secondary icon" onClick={exit} aria-label={viaAdult ? 'Панельге оралу' : 'Шығу'} data-tip={viaAdult ? 'Панельге оралу' : 'Шығу'}>
             <span aria-hidden="true">{viaAdult ? '↩' : '🚪'}</span>
           </button>
         </div>
@@ -183,7 +184,9 @@ export function ChildShell() {
               </button>
             </div>
           ) : (
-            <Outlet context={{ child, progress } satisfies ChildCtx} />
+            <div className="page-anim" key={location.pathname}>
+              <Outlet context={{ child, progress } satisfies ChildCtx} />
+            </div>
           )}
         </main>
 

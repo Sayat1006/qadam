@@ -67,7 +67,7 @@ export function AdultShell({ role, children }: { role: Role; children: (adult: A
           </button>
         </div>
         <main id="main" className="content no-bottom-nav">
-          {children(adult)}
+          <div className="page-anim">{children(adult)}</div>
         </main>
       </div>
     </div>

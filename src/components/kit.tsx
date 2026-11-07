@@ -81,9 +81,9 @@ export function ProgressRing({ value, max = 100, size = 120, stroke = 12, label,
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden="true">
         <defs>
           <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stopColor="#5145D8" />
-            <stop offset="0.6" stopColor="#4388FF" />
-            <stop offset="1" stopColor="#65D8F2" />
+            <stop offset="0" stopColor="#6555E8" />
+            <stop offset="0.6" stopColor="#4F8FF7" />
+            <stop offset="1" stopColor="#38BDF8" />
           </linearGradient>
         </defs>
         <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke="var(--track)" strokeWidth={stroke} />
@@ -168,7 +168,7 @@ export function Confetti({ run }: { run: boolean }) {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     const W = (cv.width = window.innerWidth * dpr);
     const H = (cv.height = window.innerHeight * dpr);
-    const colors = ['#5145D8', '#4388FF', '#9275FF', '#65D8F2', '#35C98A', '#FFCA70'];
+    const colors = ['#243B80', '#6555E8', '#38BDF8', '#10B981', '#F59E0B', '#A5B4FC'];
     const parts = Array.from({ length: 140 }, () => ({
       x: W / 2 + (Math.random() - 0.5) * W * 0.3,
       y: H * 0.35,

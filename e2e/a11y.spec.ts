@@ -48,3 +48,20 @@ test('ауыл нысандарын пернетақтамен басуға бо
   await page.keyboard.press('Enter');
   await expect(page.getByText('Киіз үйге қош келдің!')).toBeVisible();
 });
+
+test('жаңа белгі ашылғанда хабар шығады, бір рет қана', async ({ page }) => {
+  await seed(page, { session: 'child' });
+  // seenBadges бос — «Бірінші қадам» белгісі әлі хабарланбаған
+  await page.evaluate(() => {
+    const db = JSON.parse(localStorage.getItem('qadam.db.v1')!);
+    db.progress.c1.seenBadges = [];
+    localStorage.setItem('qadam.db.v1', JSON.stringify(db));
+  });
+  await page.goto('/child');
+  await expect(page.getByText('Жаңа белгі ашылды!')).toBeVisible();
+  await expect(page.locator('.toast strong')).toHaveText('Бірінші қадам');
+  await page.getByRole('button', { name: 'Жабу' }).click();
+  await page.reload();
+  await page.waitForTimeout(800);
+  await expect(page.getByText('Жаңа белгі ашылды!')).toHaveCount(0);
+});

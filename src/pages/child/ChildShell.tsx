@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
+import { Confetti } from '../../components/kit';
+import { badges, type Badge } from '../../lib/achievements';
+import { playCue, speak } from '../../lib/media';
 import { NavLink, Navigate, Outlet, useNavigate, useOutletContext } from 'react-router-dom';
 import { A11yButton, applyA11y } from '../../components/A11y';
 import { Bota, Brand, Modal } from '../../components/ui';
@@ -58,6 +61,29 @@ export function ChildShell() {
       setBreakOpen(true);
     }
   }, [activeSec, child]);
+
+  // Жаңа белгі ашылғанда хабарлау (бір белгі бір рет қана)
+  const [toasts, setToasts] = useState<Badge[]>([]);
+  useEffect(() => {
+    if (!child || !progress) return;
+    const done = badges(progress).filter((b) => b.done);
+    const seen = progress.seenBadges;
+    if (!seen) {
+      updateProgress(child.id, (p) => (p.seenBadges = done.map((b) => b.id)));
+      return;
+    }
+    const fresh = done.filter((b) => !seen.includes(b.id));
+    if (!fresh.length) return;
+    updateProgress(child.id, (p) => (p.seenBadges = [...(p.seenBadges ?? []), ...fresh.map((b) => b.id)]));
+    setToasts((t) => [...t, ...fresh]);
+    playCue('celebrate', child.a11y.sound);
+    if (child.a11y.autoRead) speak(`Жаңа белгі: ${fresh[0].title}!`);
+  }, [progress, child]);
+  useEffect(() => {
+    if (!toasts.length) return;
+    const id = window.setTimeout(() => setToasts((t) => t.slice(1)), 5000);
+    return () => window.clearTimeout(id);
+  }, [toasts]);
 
   if (!child || !progress) return <Navigate to="/child-login" replace />;
 
@@ -173,6 +199,26 @@ export function ChildShell() {
         </nav>
       </div>
       {breakOpen && !limitReached && <BreakModal onClose={() => setBreakOpen(false)} />}
+      <div className="toasts" role="status" aria-live="polite">
+        {toasts.slice(0, 1).map((b) => (
+          <div key={b.id} className="toast">
+            <Confetti run />
+            <span className="badge3d sm" aria-hidden="true">
+              <span>{b.icon}</span>
+            </span>
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span className="eyebrow" style={{ margin: 0 }}>
+                Жаңа белгі ашылды!
+              </span>
+              <strong style={{ display: 'block' }}>{b.title}</strong>
+              <span className="muted small">{b.desc}</span>
+            </span>
+            <button className="btn secondary icon" aria-label="Жабу" onClick={() => setToasts((t) => t.slice(1))}>
+              ✕
+            </button>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

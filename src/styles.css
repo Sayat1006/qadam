@@ -3185,3 +3185,51 @@ table.list thead th {
 .v-item:focus-visible > * {
   filter: drop-shadow(0 0 4px #fff) drop-shadow(0 0 8px var(--focus));
 }
+
+/* Хабарламалар (toast) */
+.toasts {
+  position: fixed;
+  left: 50%;
+  top: 16px;
+  transform: translateX(-50%);
+  z-index: 70;
+  width: min(440px, calc(100% - 24px));
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 14px 14px 16px;
+  border-radius: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lift);
+  animation: toast-in 500ms var(--spring) both;
+}
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(-24px) scale(0.96);
+  }
+}
+.spinner {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2.5px solid var(--track);
+  border-top-color: var(--primary);
+  animation: spin360 0.8s linear infinite;
+  vertical-align: middle;
+}
+@keyframes spin360 {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.speak-btn.playing {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px var(--primary-soft);
+}

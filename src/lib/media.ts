@@ -45,6 +45,20 @@ export function currentVoice() {
 
 const cache = new Map<string, Promise<string | null>>();
 let current: HTMLAudioElement | null = null;
+
+/* Дауыс күйі: батырмалар «дайындалуда / сөйлеп тұр» күйін көрсетеді */
+export type SpeechState = { status: 'idle' | 'preparing' | 'playing'; text: string };
+let state: SpeechState = { status: 'idle', text: '' };
+const subs = new Set<(s: SpeechState) => void>();
+function setState(s: SpeechState) {
+  state = s;
+  subs.forEach((f) => f(s));
+}
+export function onSpeechState(f: (s: SpeechState) => void) {
+  subs.add(f);
+  f(state);
+  return () => void subs.delete(f);
+}
 let token = 0;
 
 function issaiAudio(text: string, v: IssaiVoice): Promise<string | null> {
@@ -99,17 +113,27 @@ export function speak(text: string, lang = 'kk-KZ', rate = 0.85) {
   if (latin || voicePref === 'browser') return browserSpeak(clean, latin ? 'en-US' : lang, rate * ratePref);
   const my = ++token;
   const v = voicePref;
+  setState({ status: 'preparing', text });
   issaiAudio(clean, v).then((url) => {
     if (my !== token) return; // басқа мәтін басылды
-    if (!url) return browserSpeak(clean, lang, rate * ratePref);
+    if (!url) {
+      setState({ status: 'idle', text: '' });
+      return browserSpeak(clean, lang, rate * ratePref);
+    }
     const a = new Audio(url);
     current = a;
-    a.play().catch(() => browserSpeak(clean, lang, rate * ratePref));
+    a.onended = () => my === token && setState({ status: 'idle', text: '' });
+    setState({ status: 'playing', text });
+    a.play().catch(() => {
+      setState({ status: 'idle', text: '' });
+      browserSpeak(clean, lang, rate * ratePref);
+    });
   });
 }
 
 export function stopSpeaking() {
   token++;
+  if (state.status !== 'idle') setState({ status: 'idle', text: '' });
   try {
     current?.pause();
     current = null;

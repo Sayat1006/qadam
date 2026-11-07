@@ -76,6 +76,7 @@ export interface Progress {
   gamesByDay: Record<string, number>;
   lessonsDone: Record<string, number>; // пән → аяқталған сабақ саны
   perfectLessons?: number; // қатесіз аяқталған сабақтар
+  seenBadges?: string[]; // хабарланған белгілер
   lastLesson?: { subject: string; level: number; t: number; score: number; total: number };
 }
 

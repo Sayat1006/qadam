@@ -1,6 +1,6 @@
-import { useEffect, useId, useRef, type ReactNode } from 'react';
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-import { canSpeak, prefetchSpeech, speak } from '../lib/media';
+import { canSpeak, onSpeechState, prefetchSpeech, speak, stopSpeaking, type SpeechState } from '../lib/media';
 
 export function Brand({ to = '/' }: { to?: string }) {
   const gid = 'brandG' + useId().replace(/:/g, '');
@@ -87,18 +87,22 @@ export function Hero({ children, className = '', glow = 'right', as: Tag = 'sect
 }
 
 export function SpeakButton({ text, label = 'Тыңдау', lang }: { text: string; label?: string; lang?: string }) {
+  const [st, setSt] = useState<SpeechState>({ status: 'idle', text: '' });
+  useEffect(() => onSpeechState(setSt), []);
   if (!canSpeak()) return null;
+  const mine = st.text === text ? st.status : 'idle';
   return (
     <button
       type="button"
-      className="btn secondary icon"
+      className={`btn secondary icon speak-btn ${mine}`}
       onPointerEnter={() => prefetchSpeech(text)}
       onFocus={() => prefetchSpeech(text)}
-      onClick={() => speak(text, lang)}
-      aria-label={`${label}: ${text}`}
-      title={label}
+      onClick={() => (mine === 'idle' ? speak(text, lang) : stopSpeaking())}
+      aria-label={mine === 'preparing' ? 'Дауыс дайындалуда, тоқтату' : mine === 'playing' ? 'Тоқтату' : `${label}: ${text}`}
+      aria-busy={mine === 'preparing'}
+      title={mine === 'idle' ? label : 'Тоқтату'}
     >
-      <span aria-hidden="true">🔊</span>
+      <span aria-hidden="true">{mine === 'preparing' ? <span className="spinner" /> : mine === 'playing' ? '⏸' : '🔊'}</span>
     </button>
   );
 }

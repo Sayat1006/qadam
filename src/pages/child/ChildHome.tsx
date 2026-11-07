@@ -4,7 +4,8 @@ import { Bar, Bota, Hero } from '../../components/ui';
 import { getSubject, LEVEL_NAMES, subjects, upcoming } from '../../content';
 import { summarize } from '../../lib/adaptive';
 import { badges, levelProgress, streaks } from '../../lib/achievements';
-import { today, updateProgress } from '../../lib/db';
+import { today, updateProgress, useStore } from '../../lib/db';
+import { assignmentStatus, topicTitle } from '../../lib/plans';
 import type { MoodId } from '../../lib/types';
 import { useChild } from './ChildShell';
 
@@ -18,19 +19,17 @@ export const MOODS: { id: MoodId; e: string; l: string }[] = [
 
 const WD = ['Жс', 'Дс', 'Сс', 'Ср', 'Бс', 'Жм', 'Сн'];
 
-function topicTitle(subjectId: string, topic: string) {
-  const s = getSubject(subjectId);
-  for (const l of s?.levels ?? []) {
-    const t = l.topics.find((x) => x.id === topic);
-    if (t) return t.title;
-  }
-  return topic;
-}
 
 export function ChildHome() {
   useTitle('Шолу');
   const { child, progress } = useChild();
+  const { db } = useStore();
   const d = today();
+  const myTasks = (db.assignments ?? [])
+    .filter((a) => a.childIds.includes(child.id))
+    .map((a) => ({ a, st: assignmentStatus(a, progress) }))
+    .filter((x) => !x.st.finished)
+    .sort((x, y) => x.a.due.localeCompare(y.a.due));
   const mood = progress.moods.find((m) => m.date === d);
   const todayAttempts = progress.attempts.filter((a) => today(new Date(a.t)) === d);
   const practiced = new Set(todayAttempts.map((a) => a.subject));
@@ -150,6 +149,38 @@ export function ChildHome() {
               🔤 Қазақ тілі
             </Link>
           </div>
+        </Reveal>
+      )}
+
+      {myTasks.length > 0 && (
+        <Reveal className="card stack" style={{ borderColor: 'var(--primary)' }}>
+          <p className="eyebrow" style={{ margin: 0 }}>
+            Мұғалімнің тапсырмасы
+          </p>
+          {myTasks.map(({ a, st }) => {
+            const s = getSubject(a.subject);
+            return (
+              <div key={a.id} className="row spread">
+                <span className="row" style={{ gap: 12, flexWrap: 'nowrap', minWidth: 0, flex: 1 }}>
+                  <span className="subject-chip sm" style={{ ['--subject' as string]: s?.color }} aria-hidden="true">
+                    {s?.emoji}
+                  </span>
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <strong style={{ display: 'block' }}>
+                      {s?.title}: {topicTitle(a.subject, a.topic)}
+                    </strong>
+                    <Bar value={(100 * st.done) / a.count} label={`${st.done} / ${a.count} тапсырма`} />
+                    <span className="muted small">
+                      {st.done} / {a.count} тапсырма{st.overdue ? ' · мерзімі өтті' : ''}
+                    </span>
+                  </span>
+                </span>
+                <Link className="btn" to={`/child/lesson/${a.subject}${a.topic ? `?topic=${a.topic}` : ''}`}>
+                  Орындау
+                </Link>
+              </div>
+            );
+          })}
         </Reveal>
       )}
 

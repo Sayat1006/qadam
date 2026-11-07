@@ -5,6 +5,7 @@ import { LEVEL_NAMES, subjectIds } from '../../content';
 import { createAdult, createChild, deleteAdult, deleteChild, exportJSON, importJSON, resetPassword, updateChild, useStore } from '../../lib/db';
 import type { Adult, Child, Role } from '../../lib/types';
 import { PICS } from '../Auth';
+import { makePassword, makePicPass, makeUsername, parseBulk } from '../../lib/bulk';
 import { AdultShell, ROLE_NAMES } from './AdultShell';
 import { ChildReport } from './ChildReport';
 
@@ -16,7 +17,7 @@ export function AdminPage() {
 
 function AdminView({ me }: { me: Adult }) {
   useTitle('Әкімші панелі');
-  const [tab, setTab] = useState<'adults' | 'children' | 'reports' | 'backup'>('children');
+  const [tab, setTab] = useState<'adults' | 'children' | 'bulk' | 'reports' | 'backup'>('children');
   return (
     <div className="stack">
       <h1>Әкімші панелі</h1>
@@ -27,6 +28,7 @@ function AdminView({ me }: { me: Adult }) {
         {(
           [
             ['children', 'Балалар'],
+            ['bulk', 'Топпен тіркеу'],
             ['adults', 'Ата-ана мен мұғалімдер'],
             ['reports', 'Есептер'],
             ['backup', 'Сақтық көшірме'],
@@ -39,6 +41,7 @@ function AdminView({ me }: { me: Adult }) {
       </div>
       {tab === 'adults' && <Adults me={me} />}
       {tab === 'children' && <Children />}
+      {tab === 'bulk' && <Bulk />}
       {tab === 'reports' && <Reports me={me} />}
       {tab === 'backup' && <Backup />}
     </div>
@@ -476,6 +479,144 @@ function Backup() {
           </p>
         )}
       </div>
+    </div>
+  );
+}
+
+/* ---------------- Топпен тіркеу (T15) ---------------- */
+
+interface Created {
+  child: string;
+  avatar: string;
+  picPass: string[];
+  parent?: { name: string; username: string; password: string };
+}
+
+function Bulk() {
+  const { db } = useStore();
+  const teachers = db.adults.filter((a) => a.role === 'teacher');
+  const [text, setText] = useState('');
+  const [teacherIds, setTeacherIds] = useState<string[]>([]);
+  const [startLevel, setStartLevel] = useState(1);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<Created[]>([]);
+  const rows = parseBulk(text);
+  const valid = rows.filter((r) => !r.error);
+
+  async function run() {
+    setBusy(true);
+    const taken = new Set(db.adults.map((a) => a.username.toLowerCase()));
+    const out: Created[] = [];
+    for (const r of valid) {
+      let parentIds: string[] = [];
+      let parent: Created['parent'];
+      if (r.parentName) {
+        const username = makeUsername(r.parentName, taken);
+        const password = makePassword();
+        const a = await createAdult({ role: 'parent', name: r.parentName, username, password });
+        parentIds = [a.id];
+        parent = { name: r.parentName, username, password };
+      }
+      const avatar = AVATARS[Math.floor(Math.random() * AVATARS.length)];
+      const picPass = makePicPass(PICS);
+      createChild({ name: r.name, birthYear: r.birthYear, avatar, picPass, parentIds, teacherIds, startLevel }, subjectIds);
+      out.push({ child: r.name, avatar, picPass, parent });
+    }
+    setDone(out);
+    setText('');
+    setBusy(false);
+  }
+
+  return (
+    <div className="stack">
+      {done.length === 0 ? (
+        <div className="grid cols-2" style={{ alignItems: 'start' }}>
+          <div className="card stack">
+            <h2 style={{ margin: 0 }}>Сыныпты бірден тіркеу</h2>
+            <p className="muted small" style={{ margin: 0 }}>
+              Әр жолға бір оқушы: <code>Аты; туған жылы; ата-ананың аты-жөні</code>. Ата-ана бағаны міндетті емес. Кестеден (Excel) көшіріп қоюға да болады.
+            </p>
+            <label className="field">
+              <span>Оқушылар тізімі</span>
+              <textarea rows={10} value={text} onChange={(e) => setText(e.target.value)} placeholder={'Ерлан; 2017; Гүлнар Ахметова\nДана; 2016; Асқар Сейітов'} />
+            </label>
+            <PeoplePicker list={teachers} value={teacherIds} onChange={setTeacherIds} label="Мұғалімі" />
+            <div>
+              <p style={{ fontWeight: 700, margin: '0 0 6px' }}>Бастапқы деңгей</p>
+              <Seg label="Бастапқы деңгей" value={startLevel} onChange={setStartLevel} options={[1, 2, 3, 4, 5].map((l) => ({ v: l, l: `${LEVEL_NAMES[l].icon} ${l}` }))} />
+            </div>
+            <button className="btn big" disabled={!valid.length || busy} onClick={run}>
+              {busy ? 'Тіркелуде…' : `${valid.length} оқушыны тіркеу`}
+            </button>
+          </div>
+          <div className="card stack">
+            <h3 style={{ margin: 0 }}>Алдын ала қарау ({rows.length})</h3>
+            {rows.length === 0 && <p className="muted">Тізім бос.</p>}
+            <div className="table-wrap">
+              <table className="list">
+                <thead>
+                  <tr>
+                    <th scope="col">Аты</th>
+                    <th scope="col">Туған жылы</th>
+                    <th scope="col">Ата-анасы</th>
+                    <th scope="col">Күйі</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((r, i) => (
+                    <tr key={i}>
+                      <td>{r.name || '—'}</td>
+                      <td>{r.birthYear || '—'}</td>
+                      <td>{r.parentName || '—'}</td>
+                      <td>{r.error ? <span className="chip weak">{r.error}</span> : <span className="chip good">✓</span>}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="stack">
+          <div className="notice row spread">
+            <span>
+              {done.length} оқушы тіркелді. Кіру карточкаларын басып шығарып, оқушылар мен ата-аналарға таратыңыз. Құпиясөздер тек осы жерде көрсетіледі.
+            </span>
+            <div className="row">
+              <button className="btn" onClick={() => window.print()}>
+                🖨 Карточкаларды басып шығару
+              </button>
+              <button className="btn secondary" onClick={() => setDone([])}>
+                Жаңа тізім
+              </button>
+            </div>
+          </div>
+          <div className="login-cards print-cards">
+            {done.map((c, i) => (
+              <div key={i} className="login-card">
+                <div className="row" style={{ gap: 10 }}>
+                  <span style={{ fontSize: '2rem' }}>{c.avatar}</span>
+                  <strong style={{ fontSize: '1.1rem' }}>{c.child}</strong>
+                </div>
+                <p className="small" style={{ margin: '6px 0 2px' }}>
+                  Оқушының сурет-құпиясөзі (ретімен):
+                </p>
+                <div style={{ fontSize: '1.8rem', letterSpacing: '0.2em' }}>{c.picPass.join(' ')}</div>
+                {c.parent && (
+                  <p className="small" style={{ margin: '8px 0 0' }}>
+                    Ата-ана: {c.parent.name}
+                    <br />
+                    Логин: <code>{c.parent.username}</code> · Құпиясөз: <code>{c.parent.password}</code>
+                  </p>
+                )}
+                <p className="small muted" style={{ margin: '6px 0 0' }}>
+                  qadamda.vercel.app
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

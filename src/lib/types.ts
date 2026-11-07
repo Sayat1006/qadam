@@ -89,12 +89,38 @@ export interface Note {
   t: number;
 }
 
+/** Мұғалім берген тапсырма */
+export interface Assignment {
+  id: string;
+  authorId: string;
+  childIds: string[];
+  subject: string;
+  topic: string | null; // null — пәннің кез келген тақырыбы
+  count: number; // орындалуы тиіс тапсырма саны
+  due: string; // YYYY-MM-DD
+  createdAt: number;
+}
+
+/** Жеке дамыту бағдарламасының мақсаты (ЖДБ) */
+export interface Goal {
+  id: string;
+  authorId: string;
+  childId: string;
+  subject: string;
+  topic: string;
+  targetPct: number; // бірінші реттен дұрыс, %
+  due: string;
+  createdAt: number;
+}
+
 export interface DB {
   version: 1;
   adults: Adult[];
   children: Child[];
   progress: Record<string, Progress>;
   notes: Note[];
+  assignments?: Assignment[];
+  goals?: Goal[];
 }
 
 export type Session =

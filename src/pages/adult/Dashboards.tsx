@@ -7,6 +7,7 @@ import { childrenFor, today, useStore } from '../../lib/db';
 import type { Adult, Child } from '../../lib/types';
 import { AdultShell } from './AdultShell';
 import { ChildReport } from './ChildReport';
+import { AssignmentsPanel } from './Plans';
 
 function ChildPicker({ list, value, onChange }: { list: Child[]; value: string | null; onChange: (id: string) => void }) {
   if (list.length <= 1) return null;
@@ -118,6 +119,7 @@ function TeacherView({ adult }: { adult: Adult }) {
               </tbody>
             </table>
           </div>
+          <AssignmentsPanel teacher={adult} students={list} />
         </>
       )}
     </div>

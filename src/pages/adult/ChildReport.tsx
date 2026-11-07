@@ -8,6 +8,7 @@ import { summarize } from '../../lib/adaptive';
 import { addNote, loginChild, today, updateChild, updateProgress, useStore } from '../../lib/db';
 import type { Adult, Child } from '../../lib/types';
 import { MOODS } from '../child/ChildHome';
+import { GoalsTab, PrintReport } from './Plans';
 
 function lastDays(n: number) {
   const out: string[] = [];
@@ -26,7 +27,7 @@ export function ChildReport({ child, viewer }: { child: Child; viewer: Adult }) 
   const { db } = useStore();
   const navigate = useNavigate();
   const p = db.progress[child.id];
-  const [tab, setTab] = useState<'overview' | 'subjects' | 'notes' | 'settings'>('overview');
+  const [tab, setTab] = useState<'overview' | 'subjects' | 'goals' | 'notes' | 'settings'>('overview');
   if (!p) return null;
   const d = today();
   const days = lastDays(7);
@@ -77,20 +78,27 @@ export function ChildReport({ child, viewer }: { child: Child; viewer: Adult }) 
               </span>
             </div>
           </div>
+          <div className="row">
+          <button className="btn big secondary no-print" onClick={() => window.print()}>
+            🖨 Есепті басып шығару
+          </button>
           <button className="btn big" onClick={openAsChild}>
             Бала режимін ашу{' '}
             <span className="arrow" aria-hidden="true">
               ➜
             </span>
           </button>
+          </div>
         </div>
       </Hero>
+      <PrintReport child={child} />
 
       <div className="tabs" role="tablist" aria-label="Есеп бөлімдері">
         {(
           [
             ['overview', 'Шолу'],
             ['subjects', 'Пәндер'],
+            ['goals', 'Мақсаттар'],
             ['notes', 'Жазбалар'],
             ['settings', 'Баптаулар'],
           ] as const
@@ -252,6 +260,8 @@ export function ChildReport({ child, viewer }: { child: Child; viewer: Adult }) 
           })}
         </div>
       )}
+
+      {tab === 'goals' && <GoalsTab child={child} viewer={viewer} />}
 
       {tab === 'notes' && <Notes childId={child.id} viewer={viewer} notes={notes} />}
 

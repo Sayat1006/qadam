@@ -3234,3 +3234,94 @@ table.list thead th {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-soft);
 }
+
+/* ===== Басып шығару (T14) ===== */
+.print-only {
+  display: none;
+}
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+    color: #000 !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+  .print-only {
+    display: block;
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    font-size: 11pt;
+    line-height: 1.4;
+    color: #000;
+  }
+  .print-only h1 {
+    font-size: 18pt;
+    margin: 0 0 6pt;
+  }
+  .print-only h2 {
+    font-size: 13pt;
+    margin: 12pt 0 4pt;
+  }
+  .print-only table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 8pt;
+  }
+  .print-only th,
+  .print-only td {
+    border: 1px solid #999;
+    padding: 4pt 6pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  .print-foot {
+    margin-top: 14pt;
+    color: #555;
+    font-size: 9pt;
+  }
+}
+
+.login-cards {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr));
+}
+.login-card {
+  border: 1.5px dashed var(--outline);
+  border-radius: 18px;
+  padding: 14px;
+  background: var(--surface);
+}
+@media print {
+  .print-cards,
+  .print-cards * {
+    visibility: visible;
+  }
+  .print-cards {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8mm;
+  }
+  .print-cards .login-card {
+    break-inside: avoid;
+    border: 1px dashed #666;
+    background: #fff;
+    color: #000;
+  }
+}

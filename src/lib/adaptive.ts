@@ -40,14 +40,15 @@ export function topicAccuracy(attempts: Attempt[], subject: string, level: numbe
   return map;
 }
 
-export function buildLesson(subjectId: string, level: number, attempts: Attempt[], size: number): LessonItem[] {
+export function buildLesson(subjectId: string, level: number, attempts: Attempt[], size: number, topicId?: string): LessonItem[] {
   const subject = getSubject(subjectId);
   if (!subject) return [];
   const lvl = subject.levels.find((l) => l.level === level) ?? subject.levels[0];
   const acc = topicAccuracy(attempts, subjectId, lvl.level);
 
   // Салмақ: аз жаттыққан немесе қиын тақырыптар жиірек
-  const weighted = lvl.topics.flatMap((t) => {
+  const pool = topicId ? lvl.topics.filter((t) => t.id === topicId) : lvl.topics;
+  const weighted = (pool.length ? pool : lvl.topics).flatMap((t) => {
     const s = acc[t.id];
     const rate = s && s.n ? s.ok / s.n : 0.5;
     const w = s && s.n >= 3 && rate > 0.85 ? 1 : rate < 0.6 ? 3 : 2;
@@ -58,10 +59,10 @@ export function buildLesson(subjectId: string, level: number, attempts: Attempt[
   const seen = new Set<string>();
   let lastTopic = '';
   let guard = 0;
-  const mainCount = level > 1 ? size - 1 : size;
+  const mainCount = level > 1 && !topicId ? size - 1 : size;
   while (items.length < mainCount && guard++ < 200) {
     const topic = pick(weighted);
-    if (topic.id === lastTopic && lvl.topics.length > 1) continue;
+    if (!topicId && topic.id === lastTopic && lvl.topics.length > 1) continue;
     const task = topic.gen();
     const k = taskKey(task);
     if (seen.has(k)) continue;
@@ -70,7 +71,7 @@ export function buildLesson(subjectId: string, level: number, attempts: Attempt[
     items.push({ task, level: lvl.level, review: false });
   }
 
-  if (level > 1) {
+  if (level > 1 && !topicId) {
     const prev = subject.levels.find((l) => l.level === level - 1);
     if (prev) {
       const task = pick(prev.topics).gen();

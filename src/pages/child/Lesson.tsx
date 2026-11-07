@@ -4,6 +4,7 @@ import { TaskView, type TaskResult } from '../../components/TaskView';
 import { Confetti, ProgressRing, useTitle } from '../../components/kit';
 import { Bar, Bota, Hero, Modal } from '../../components/ui';
 import { levelProgress } from '../../lib/achievements';
+import { topicLevel } from '../../lib/plans';
 import { getSubject, LEVEL_NAMES } from '../../content';
 import { buildLesson, decideLevel } from '../../lib/adaptive';
 import { getDB, updateProgress } from '../../lib/db';
@@ -20,13 +21,14 @@ export function Lesson() {
   const subject = getSubject(sid);
   const current = progress.levels[sid] ?? 1;
   const reqLevel = Number(params.get('level'));
-  const level = reqLevel && reqLevel <= current ? reqLevel : current;
+  const topicId = params.get('topic') ?? undefined;
+  const level = topicId ? topicLevel(sid, topicId, current) : reqLevel && reqLevel <= current ? reqLevel : current;
   const [round, setRound] = useState(0);
 
   const items = useMemo(
-    () => (subject ? buildLesson(sid, level, getDB().progress[child.id]?.attempts ?? [], child.settings.lessonSize) : []),
+    () => (subject ? buildLesson(sid, level, getDB().progress[child.id]?.attempts ?? [], child.settings.lessonSize, topicId) : []),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [sid, level, round],
+    [sid, level, round, topicId],
   );
   const [idx, setIdx] = useState(0);
   const [earned, setEarned] = useState(0);

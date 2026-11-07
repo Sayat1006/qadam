@@ -5,7 +5,7 @@
  * интерфейс (функция атаулары) өзгермейді.
  */
 import { useSyncExternalStore } from 'react';
-import type { A11ySettings, Adult, Child, ChildSettings, DB, Progress, Role, Session } from './types';
+import type { A11ySettings, Adult, Assignment, Child, ChildSettings, DB, Goal, Progress, Role, Session } from './types';
 
 const KEY = 'qadam.db.v1';
 const SESSION_KEY = 'qadam.session';
@@ -259,6 +259,8 @@ export function deleteChild(childId: string) {
     d.children = d.children.filter((c) => c.id !== childId);
     delete d.progress[childId];
     d.notes = d.notes.filter((n) => n.childId !== childId);
+    d.goals = (d.goals ?? []).filter((g) => g.childId !== childId);
+    d.assignments = (d.assignments ?? []).map((a) => ({ ...a, childIds: a.childIds.filter((x) => x !== childId) }));
   });
 }
 
@@ -274,6 +276,27 @@ export function updateProgress(childId: string, fn: (p: Progress) => void) {
 export function addNote(childId: string, authorId: string, text: string) {
   mutate((d) => {
     d.notes.push({ id: uid('n_'), childId, authorId, text: text.trim(), t: Date.now() });
+  });
+}
+
+export function addAssignment(a: Omit<Assignment, 'id' | 'createdAt'>) {
+  mutate((d) => {
+    d.assignments = [...(d.assignments ?? []), { ...a, id: uid('a_'), createdAt: Date.now() }];
+  });
+}
+export function removeAssignment(id: string) {
+  mutate((d) => {
+    d.assignments = (d.assignments ?? []).filter((x) => x.id !== id);
+  });
+}
+export function addGoal(g: Omit<Goal, 'id' | 'createdAt'>) {
+  mutate((d) => {
+    d.goals = [...(d.goals ?? []), { ...g, id: uid('g_'), createdAt: Date.now() }];
+  });
+}
+export function removeGoal(id: string) {
+  mutate((d) => {
+    d.goals = (d.goals ?? []).filter((x) => x.id !== id);
   });
 }
 
